@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit Internship</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+    <h1>Edit Internship</h1>
+
+    <form method="POST">
+
+        <label>Company Name:</label><br>
+        <input type="text" name="company"
+               value="{{ internship['company'] }}" required><br><br>
+
+        <label>Internship Role:</label><br>
+        <input type="text" name="role"
+               value="{{ internship['role'] }}" required><br><br>
+
+        <label>Location:</label><br>
+        <input type="text" name="location"
+               value="{{ internship['location'] }}"><br><br>
+
+        <label>Application Link:</label><br>
+        <input type="url" name="link"
+               value="{{ internship['link'] }}"><br><br>
+
+        <button type="submit">Update Internship</button>
+
+    </form>
+
+    <br>
+
+    <a href="/">
+        <button>Back to Home</button>
+    </a>
+
+</body>
+</html>

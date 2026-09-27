@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Job & Internship Tracker</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+    <h1>Job & Internship Tracker</h1>
+
+    <div class="stats-container">
+
+        <div class="stat-box">
+            <h3>Jobs</h3>
+            <p>{{ jobs|length }}</p>
+        </div>
+
+        <div class="stat-box">
+            <h3>Internships</h3>
+            <p>{{ internships|length }}</p>
+        </div>
+
+    </div>
+
+    <p>Track your jobs and internships in one place.</p>
+
+    <a href="/add-job">
+        <button>Add Job</button>
+    </a>
+
+    <a href="/add-internship">
+        <button>Add Internship</button>
+    </a>
+
+    <h2>Saved Jobs</h2>
+
+    <input type="text" id="jobSearch" placeholder="Search jobs..." onkeyup="searchJobs()">
+
+    {% if jobs %}
+        {% for job in jobs %}
+            <div class="job-card">
+                <h3>{{ job["company"] }}</h3>
+                <p>Role: {{ job["role"] }}</p>
+                <p>Location: {{ job["location"] }}</p>
+
+                <p>
+                    <a href="{{ job['link'] }}" target="_blank">
+                        Apply
+                    </a>
+                </p>
+
+                <a href="/edit-job/{{ job['id'] }}">
+                    <button>Edit</button>
+                </a>
+
+                <a href="/delete-job/{{ job['id'] }}">
+                    <button onclick="return confirm('Are you sure you want to delete this job?')">
+                        Delete
+                    </button>
+                </a>
+            </div>
+
+            <hr>
+        {% endfor %}
+    {% else %}
+        <p>No jobs added yet.</p>
+    {% endif %}
+
+
+    <h2>Saved Internships</h2>
+
+    <input type="text" id="internshipSearch" placeholder="Search internships..." onkeyup="searchInternships()">
+
+    {% if internships %}
+        {% for internship in internships %}
+            <div class="internship-card">
+                <h3>{{ internship["company"] }}</h3>
+                <p>Role: {{ internship["role"] }}</p>
+                <p>Location: {{ internship["location"] }}</p>
+
+                <p>
+                    <a href="{{ internship['link'] }}" target="_blank">
+                        Apply
+                    </a>
+                </p>
+
+                <a href="/edit-internship/{{ internship['id'] }}">
+                    <button>Edit</button>
+                </a>
+
+                <a href="/delete-internship/{{ internship['id'] }}">
+                    <button onclick="return confirm('Are you sure you want to delete this internship?')">
+                        Delete
+                    </button>
+                </a>
+            </div>
+
+            <hr>
+        {% endfor %}
+    {% else %}
+        <p>No internships added yet.</p>
+    {% endif %}
+
+<script>
+    function searchJobs() {
+        let input = document.getElementById("jobSearch");
+        let filter = input.value.toLowerCase();
+        let jobs = document.querySelectorAll(".job-card");
+
+        jobs.forEach(function(job) {
+            let text = job.innerText.toLowerCase();
+
+            if (text.includes(filter)) {
+                job.style.display = "";
+            } else {
+                job.style.display = "none";
+            }
+        });
+    }
+</script>
+
+<script>
+    function searchInternships() {
+        let input = document.getElementById("internshipSearch");
+        let filter = input.value.toLowerCase();
+        let internships = document.querySelectorAll(".internship-card");
+
+        internships.forEach(function(internship) {
+            let text = internship.innerText.toLowerCase();
+
+            if (text.includes(filter)) {
+                internship.style.display = "";
+            } else {
+                internship.style.display = "none";
+            }
+        });
+    }
+</script>
+
+</body>
+</html>
