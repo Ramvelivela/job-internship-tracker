@@ -98,13 +98,19 @@
                                 {{ job["status"] }}
                             </p>
 
+                        {% if job["link"] %}
+
                             <a
                                 class="apply-link"
                                 href="{{ job['link'] }}"
                                 target="_blank"
+                                rel="noopener no referrer"
                             >
-                                View Application →
+                                Apply Now →
                             </a>
+                        {% else %}
+                            <span class="no-link">Application link not available</span>
+                        {% endif %}
 
                         </div>
 
@@ -191,13 +197,18 @@
                                 {{ internship["status"] }}
                             </p>
 
+                        {% if internship["link"] %}
                             <a
                                 class="apply-link"
                                 href="{{ internship['link'] }}"
                                 target="_blank"
-                            >
-                                View Application →
+                                rel="noopener noreferrer"
+                             >
+                                 Apply Now →
                             </a>
+                        {% else %}
+                            <span class="no-link">Application link not available</span>
+                        {% endif %}
 
                         </div>
 
