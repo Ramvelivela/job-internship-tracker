@@ -51,12 +51,13 @@ def edit_internship(internship_id):
         role = request.form["role"]
         location = request.form["location"]
         link = request.form["link"]
+        status = request.form["status"]
 
         cursor.execute("""
             UPDATE internships
-            SET company = ?, role = ?, location = ?, link = ?
+            SET company = ?, role = ?, location = ?, link = ?, status = ?
             WHERE id = ?
-        """, (company, role, location, link, internship_id))
+        """, (company, role, location, link, status, internship_id))
 
         connection.commit()
         connection.close()
@@ -84,6 +85,8 @@ def add_job():
         role = request.form["role"]
         location = request.form["location"]
         link = request.form["link"]
+        status = request.form["status"]
+
 
         connection = sqlite3.connect("jobs.db")
         cursor = connection.cursor()
@@ -91,7 +94,7 @@ def add_job():
         cursor.execute("""
             INSERT INTO jobs (company, role, location, link)
             VALUES (?, ?, ?, ?)
-        """, (company, role, location, link))
+        """, (company, role, location, link, status))
 
         connection.commit()
         connection.close()
@@ -106,6 +109,7 @@ def add_internship():
         role = request.form["role"]
         location = request.form["location"]
         link = request.form["link"]
+        status = request.form["status"]
 
         connection = sqlite3.connect("jobs.db")
         cursor = connection.cursor()
@@ -113,7 +117,7 @@ def add_internship():
         cursor.execute("""
             INSERT INTO internships (company, role, location, link)
             VALUES (?, ?, ?, ?)
-        """, (company, role, location, link))
+        """, (company, role, location, link, status))
 
         connection.commit()
         connection.close()
@@ -147,12 +151,13 @@ def edit_job(job_id):
         role = request.form["role"]
         location = request.form["location"]
         link = request.form["link"]
+        status = request.form["status"]
 
         cursor.execute("""
             UPDATE jobs
-            SET company = ?, role = ?, location = ?, link = ?
+            SET company = ?, role = ?, location = ?, link = ?, status = ?
             WHERE id = ?
-        """, (company, role, location, link, job_id))
+        """, (company, role, location, link, status, job_id))
 
         connection.commit()
         connection.close()

@@ -4,138 +4,263 @@
     <title>Job & Internship Tracker</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
+
 <body>
 
-    <h1>Job & Internship Tracker</h1>
+    <div class="container">
 
-    <div class="stats-container">
+        <header class="hero">
+            <h1>Job & Internship Tracker</h1>
+            <p>Organize and manage your career opportunities in one place.</p>
+        </header>
 
-        <div class="stat-box">
-            <h3>Jobs</h3>
-            <p>{{ jobs|length }}</p>
+
+        <!-- Statistics -->
+        <div class="stats-container">
+
+            <div class="stat-box">
+                <span class="stat-label">Jobs</span>
+                <strong>{{ jobs|length }}</strong>
+                <small>Saved opportunities</small>
+            </div>
+
+            <div class="stat-box">
+                <span class="stat-label">Internships</span>
+                <strong>{{ internships|length }}</strong>
+                <small>Saved opportunities</small>
+            </div>
+
         </div>
 
-        <div class="stat-box">
-            <h3>Internships</h3>
-            <p>{{ internships|length }}</p>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+
+            <a href="/add-job">
+                <button class="primary-btn">+ Add Job</button>
+            </a>
+
+            <a href="/add-internship">
+                <button class="primary-btn">+ Add Internship</button>
+            </a>
+
         </div>
+
+
+        <!-- Saved Jobs -->
+        <section class="section">
+
+            <div class="section-header">
+                <div>
+                    <h2>Saved Jobs</h2>
+                    <p>Manage your saved job opportunities</p>
+                </div>
+
+                <input
+                    type="text"
+                    id="jobSearch"
+                    placeholder="Search jobs..."
+                    onkeyup="searchJobs()"
+                >
+            </div>
+
+
+            {% if jobs %}
+
+                {% for job in jobs %}
+
+                    <div class="job-card">
+
+                        <div class="card-content">
+
+                            <h3>{{ job["company"] }}</h3>
+
+                            <p>
+                                <strong>Role:</strong>
+                                {{ job["role"] }}
+                            </p>
+
+                            <p>
+                                <strong>Location:</strong>
+                                {{ job["location"] }}
+                            </p>
+
+                            <p>
+                                <strong>Status:</strong>
+                                {{ job["status"] }}
+                            </p>
+
+                            <a
+                                class="apply-link"
+                                href="{{ job['link'] }}"
+                                target="_blank"
+                            >
+                                View Application →
+                            </a>
+
+                        </div>
+
+                        <div class="card-actions">
+
+                            <a href="/edit-job/{{ job['id'] }}">
+                                <button class="edit-btn">Edit</button>
+                            </a>
+
+                            <a href="/delete-job/{{ job['id'] }}">
+                                <button
+                                    class="delete-btn"
+                                    onclick="return confirm('Are you sure you want to delete this job?')"
+                                >
+                                    Delete
+                                </button>
+                            </a>
+
+                        </div>
+
+                    </div>
+
+                {% endfor %}
+
+            {% else %}
+
+                <div class="empty-state">
+                    <p>No jobs added yet.</p>
+                </div>
+
+            {% endif %}
+
+        </section>
+
+
+        <!-- Saved Internships -->
+        <section class="section">
+
+            <div class="section-header">
+                <div>
+                    <h2>Saved Internships</h2>
+                    <p>Manage your saved internship opportunities</p>
+                </div>
+
+                <input
+                    type="text"
+                    id="internshipSearch"
+                    placeholder="Search internships..."
+                    onkeyup="searchInternships()"
+                >
+            </div>
+
+
+            {% if internships %}
+
+                {% for internship in internships %}
+
+                    <div class="internship-card">
+
+                        <div class="card-content">
+
+                            <h3>{{ internship["company"] }}</h3>
+
+                            <p>
+                                <strong>Role:</strong>
+                                {{ internship["role"] }}
+                            </p>
+
+                            <p>
+                                <strong>Location:</strong>
+                                {{ internship["location"] }}
+                            </p>
+                            
+                            <p>
+                                <strong>Status:</strong>
+                                {{ internship["status"] }}
+                            </p>
+
+                            <a
+                                class="apply-link"
+                                href="{{ internship['link'] }}"
+                                target="_blank"
+                            >
+                                View Application →
+                            </a>
+
+                        </div>
+
+                        <div class="card-actions">
+
+                            <a href="/edit-internship/{{ internship['id'] }}">
+                                <button class="edit-btn">Edit</button>
+                            </a>
+
+                            <a href="/delete-internship/{{ internship['id'] }}">
+                                <button
+                                    class="delete-btn"
+                                    onclick="return confirm('Are you sure you want to delete this internship?')"
+                                >
+                                    Delete
+                                </button>
+                            </a>
+
+                        </div>
+
+                    </div>
+
+                {% endfor %}
+
+            {% else %}
+
+                <div class="empty-state">
+                    <p>No internships added yet.</p>
+                </div>
+
+            {% endif %}
+
+        </section>
 
     </div>
 
-    <p>Track your jobs and internships in one place.</p>
 
-    <a href="/add-job">
-        <button>Add Job</button>
-    </a>
+    <script>
 
-    <a href="/add-internship">
-        <button>Add Internship</button>
-    </a>
+        function searchJobs() {
 
-    <h2>Saved Jobs</h2>
+            let input = document.getElementById("jobSearch");
+            let filter = input.value.toLowerCase();
+            let jobs = document.querySelectorAll(".job-card");
 
-    <input type="text" id="jobSearch" placeholder="Search jobs..." onkeyup="searchJobs()">
+            jobs.forEach(function(job) {
 
-    {% if jobs %}
-        {% for job in jobs %}
-            <div class="job-card">
-                <h3>{{ job["company"] }}</h3>
-                <p>Role: {{ job["role"] }}</p>
-                <p>Location: {{ job["location"] }}</p>
+                let text = job.innerText.toLowerCase();
 
-                <p>
-                    <a href="{{ job['link'] }}" target="_blank">
-                        Apply
-                    </a>
-                </p>
+                if (text.includes(filter)) {
+                    job.style.display = "";
+                } else {
+                    job.style.display = "none";
+                }
 
-                <a href="/edit-job/{{ job['id'] }}">
-                    <button>Edit</button>
-                </a>
-
-                <a href="/delete-job/{{ job['id'] }}">
-                    <button onclick="return confirm('Are you sure you want to delete this job?')">
-                        Delete
-                    </button>
-                </a>
-            </div>
-
-            <hr>
-        {% endfor %}
-    {% else %}
-        <p>No jobs added yet.</p>
-    {% endif %}
+            });
+        }
 
 
-    <h2>Saved Internships</h2>
+        function searchInternships() {
 
-    <input type="text" id="internshipSearch" placeholder="Search internships..." onkeyup="searchInternships()">
+            let input = document.getElementById("internshipSearch");
+            let filter = input.value.toLowerCase();
+            let internships = document.querySelectorAll(".internship-card");
 
-    {% if internships %}
-        {% for internship in internships %}
-            <div class="internship-card">
-                <h3>{{ internship["company"] }}</h3>
-                <p>Role: {{ internship["role"] }}</p>
-                <p>Location: {{ internship["location"] }}</p>
+            internships.forEach(function(internship) {
 
-                <p>
-                    <a href="{{ internship['link'] }}" target="_blank">
-                        Apply
-                    </a>
-                </p>
+                let text = internship.innerText.toLowerCase();
 
-                <a href="/edit-internship/{{ internship['id'] }}">
-                    <button>Edit</button>
-                </a>
+                if (text.includes(filter)) {
+                    internship.style.display = "";
+                } else {
+                    internship.style.display = "none";
+                }
 
-                <a href="/delete-internship/{{ internship['id'] }}">
-                    <button onclick="return confirm('Are you sure you want to delete this internship?')">
-                        Delete
-                    </button>
-                </a>
-            </div>
+            });
+        }
 
-            <hr>
-        {% endfor %}
-    {% else %}
-        <p>No internships added yet.</p>
-    {% endif %}
-
-<script>
-    function searchJobs() {
-        let input = document.getElementById("jobSearch");
-        let filter = input.value.toLowerCase();
-        let jobs = document.querySelectorAll(".job-card");
-
-        jobs.forEach(function(job) {
-            let text = job.innerText.toLowerCase();
-
-            if (text.includes(filter)) {
-                job.style.display = "";
-            } else {
-                job.style.display = "none";
-            }
-        });
-    }
-</script>
-
-<script>
-    function searchInternships() {
-        let input = document.getElementById("internshipSearch");
-        let filter = input.value.toLowerCase();
-        let internships = document.querySelectorAll(".internship-card");
-
-        internships.forEach(function(internship) {
-            let text = internship.innerText.toLowerCase();
-
-            if (text.includes(filter)) {
-                internship.style.display = "";
-            } else {
-                internship.style.display = "none";
-            }
-        });
-    }
-</script>
+    </script>
 
 </body>
 </html>

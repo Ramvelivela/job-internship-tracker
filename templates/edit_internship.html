@@ -25,6 +25,17 @@
         <label>Application Link:</label><br>
         <input type="url" name="link"
                value="{{ internship['link'] }}"><br><br>
+        <label>Application Status:</label><br>
+
+        <select name="status">
+            <option value="Pending" {% if internship["status"] == "Pending" %}selected{% endif %}>Pending</option>
+            <option value="Applied" {% if internship["status"] == "Applied" %}selected{% endif %}>Applied</option>
+            <option value="Interview" {% if internship["status"] == "Interview" %}selected{% endif %}>Interview</option>
+            <option value="Selected" {% if internship["status"] == "Selected" %}selected{% endif %}>Selected</option>
+            <option value="Rejected" {% if internship["status"] == "Rejected" %}selected{% endif %}>Rejected</option>
+        </select>
+
+        <br><br>
 
         <button type="submit">Update Internship</button>
 

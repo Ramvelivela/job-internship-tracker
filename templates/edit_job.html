@@ -22,6 +22,18 @@
         <label>Application Link:</label><br>
         <input type="url" name="link" value="{{ job['link'] }}"><br><br>
 
+        <label>Application Status:</label><br>
+
+        <select name="status">
+            <option value="Pending" {% if job["status"] == "Pending" %}selected{% endif %}>Pending</option>
+            <option value="Applied" {% if job["status"] == "Applied" %}selected{% endif %}>Applied</option>
+            <option value="Interview" {% if job["status"] == "Interview" %}selected{% endif %}>Interview</option>
+            <option value="Selected" {% if job["status"] == "Selected" %}selected{% endif %}>Selected</option>
+            <option value="Rejected" {% if job["status"] == "Rejected" %}selected{% endif %}>Rejected</option>
+        </select>
+
+        <br><br>
+
         <button type="submit">Update Job</button>
 
     </form>
