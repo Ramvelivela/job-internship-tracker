@@ -4,48 +4,101 @@
     <title>Edit Internship</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
+
 <body>
 
-    <h1>Edit Internship</h1>
+    <div class="container">
 
-    <form method="POST">
+        <div class="form-page">
 
-        <label>Company Name:</label><br>
-        <input type="text" name="company"
-               value="{{ internship['company'] }}" required><br><br>
+            <div class="form-header">
+                <h1>Edit Internship</h1>
+                <p>Update the details and application status of this internship.</p>
+            </div>
 
-        <label>Internship Role:</label><br>
-        <input type="text" name="role"
-               value="{{ internship['role'] }}" required><br><br>
+            <form method="POST" class="job-form">
 
-        <label>Location:</label><br>
-        <input type="text" name="location"
-               value="{{ internship['location'] }}"><br><br>
+                <div class="form-group">
+                    <label>Company Name</label>
+                    <input
+                        type="text"
+                        name="company"
+                        value="{{ internship['company'] }}"
+                        required
+                    >
+                </div>
 
-        <label>Application Link:</label><br>
-        <input type="url" name="link"
-               value="{{ internship['link'] }}"><br><br>
-        <label>Application Status:</label><br>
+                <div class="form-group">
+                    <label>Internship Role</label>
+                    <input
+                        type="text"
+                        name="role"
+                        value="{{ internship['role'] }}"
+                        required
+                    >
+                </div>
 
-        <select name="status">
-            <option value="Pending" {% if internship["status"] == "Pending" %}selected{% endif %}>Pending</option>
-            <option value="Applied" {% if internship["status"] == "Applied" %}selected{% endif %}>Applied</option>
-            <option value="Interview" {% if internship["status"] == "Interview" %}selected{% endif %}>Interview</option>
-            <option value="Selected" {% if internship["status"] == "Selected" %}selected{% endif %}>Selected</option>
-            <option value="Rejected" {% if internship["status"] == "Rejected" %}selected{% endif %}>Rejected</option>
-        </select>
+                <div class="form-group">
+                    <label>Location</label>
+                    <input
+                        type="text"
+                        name="location"
+                        value="{{ internship['location'] }}"
+                    >
+                </div>
 
-        <br><br>
+                <div class="form-group">
+                    <label>Application Link</label>
+                    <input
+                        type="url"
+                        name="link"
+                        value="{{ internship['link'] }}"
+                    >
+                </div>
 
-        <button type="submit">Update Internship</button>
+                <div class="form-group">
+                    <label>Application Status</label>
 
-    </form>
+                    <select name="status">
+                        <option value="Pending" {% if internship["status"] == "Pending" %}selected{% endif %}>
+                            Pending
+                        </option>
 
-    <br>
+                        <option value="Applied" {% if internship["status"] == "Applied" %}selected{% endif %}>
+                            Applied
+                        </option>
 
-    <a href="/">
-        <button>Back to Home</button>
-    </a>
+                        <option value="Interview" {% if internship["status"] == "Interview" %}selected{% endif %}>
+                            Interview
+                        </option>
+
+                        <option value="Selected" {% if internship["status"] == "Selected" %}selected{% endif %}>
+                            Selected
+                        </option>
+
+                        <option value="Rejected" {% if internship["status"] == "Rejected" %}selected{% endif %}>
+                            Rejected
+                        </option>
+                    </select>
+                </div>
+
+                <div class="form-actions">
+
+                    <button type="submit" class="primary-btn">
+                        Update Internship
+                    </button>
+
+                    <a href="/" class="back-btn">
+                        Back to Internships
+                    </a>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
 
 </body>
 </html>

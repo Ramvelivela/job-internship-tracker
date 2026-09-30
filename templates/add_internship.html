@@ -4,44 +4,87 @@
     <title>Add Internship</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
+
 <body>
 
-    <h1>Add Internship</h1>
+    <div class="container">
 
-    <form method="POST">
+        <div class="form-page">
 
-        <label>Company Name:</label><br>
-        <input type="text" name="company" required><br><br>
+            <div class="form-header">
+                <h1>Add New Internship</h1>
+                <p>Save a new internship opportunity to your tracker.</p>
+            </div>
 
-        <label>Internship Role:</label><br>
-        <input type="text" name="role" required><br><br>
+            <form method="POST" class="job-form">
 
-        <label>Location:</label><br>
-        <input type="text" name="location"><br><br>
+                <div class="form-group">
+                    <label>Company Name</label>
+                    <input
+                        type="text"
+                        name="company"
+                        placeholder="e.g. Microsoft"
+                        required
+                    >
+                </div>
 
-        <label>Application Link:</label><br>
-        <input type="url" name="link"><br><br>
-        <label>Application Status:</label><br>
+                <div class="form-group">
+                    <label>Internship Role</label>
+                    <input
+                        type="text"
+                        name="role"
+                        placeholder="e.g. Python Developer Intern"
+                        required
+                    >
+                </div>
 
-        <select name="status">
-            <option value="Pending">Pending</option>
-            <option value="Applied">Applied</option>
-            <option value="Interview">Interview</option>
-            <option value="Selected">Selected</option>
-            <option value="Rejected">Rejected</option>
-        </select>
+                <div class="form-group">
+                    <label>Location</label>
+                    <input
+                        type="text"
+                        name="location"
+                        placeholder="e.g. Hyderabad"
+                    >
+                </div>
 
-        <br><br>    
+                <div class="form-group">
+                    <label>Application Link</label>
+                    <input
+                        type="url"
+                        name="link"
+                        placeholder="https://..."
+                    >
+                </div>
 
-        <button type="submit">Save Internship</button>
+                <div class="form-group">
+                    <label>Application Status</label>
 
-    </form>
+                    <select name="status">
+                        <option value="Pending">Pending</option>
+                        <option value="Applied">Applied</option>
+                        <option value="Interview">Interview</option>
+                        <option value="Selected">Selected</option>
+                        <option value="Rejected">Rejected</option>
+                    </select>
+                </div>
 
-    <br>
+                <div class="form-actions">
 
-    <a href="/">
-        <button>Back to Home</button>
-    </a>
+                    <button type="submit" class="primary-btn">
+                        Save Internship
+                    </button>
+
+                    <a href="/" class="back-btn">
+                        Back to Internships
+                    </a>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
 
 </body>
 </html>

@@ -4,45 +4,101 @@
     <title>Edit Job</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
+
 <body>
 
-    <h1>Edit Job</h1>
+    <div class="container">
 
-    <form method="POST">
+        <div class="form-page">
 
-        <label>Company Name:</label><br>
-        <input type="text" name="company" value="{{ job['company'] }}" required><br><br>
+            <div class="form-header">
+                <h1>Edit Job</h1>
+                <p>Update the details and application status of this job.</p>
+            </div>
 
-        <label>Job Role:</label><br>
-        <input type="text" name="role" value="{{ job['role'] }}" required><br><br>
+            <form method="POST" class="job-form">
 
-        <label>Location:</label><br>
-        <input type="text" name="location" value="{{ job['location'] }}"><br><br>
+                <div class="form-group">
+                    <label>Company Name</label>
+                    <input
+                        type="text"
+                        name="company"
+                        value="{{ job['company'] }}"
+                        required
+                    >
+                </div>
 
-        <label>Application Link:</label><br>
-        <input type="url" name="link" value="{{ job['link'] }}"><br><br>
+                <div class="form-group">
+                    <label>Job Role</label>
+                    <input
+                        type="text"
+                        name="role"
+                        value="{{ job['role'] }}"
+                        required
+                    >
+                </div>
 
-        <label>Application Status:</label><br>
+                <div class="form-group">
+                    <label>Location</label>
+                    <input
+                        type="text"
+                        name="location"
+                        value="{{ job['location'] }}"
+                    >
+                </div>
 
-        <select name="status">
-            <option value="Pending" {% if job["status"] == "Pending" %}selected{% endif %}>Pending</option>
-            <option value="Applied" {% if job["status"] == "Applied" %}selected{% endif %}>Applied</option>
-            <option value="Interview" {% if job["status"] == "Interview" %}selected{% endif %}>Interview</option>
-            <option value="Selected" {% if job["status"] == "Selected" %}selected{% endif %}>Selected</option>
-            <option value="Rejected" {% if job["status"] == "Rejected" %}selected{% endif %}>Rejected</option>
-        </select>
+                <div class="form-group">
+                    <label>Application Link</label>
+                    <input
+                        type="url"
+                        name="link"
+                        value="{{ job['link'] }}"
+                    >
+                </div>
 
-        <br><br>
+                <div class="form-group">
+                    <label>Application Status</label>
 
-        <button type="submit">Update Job</button>
+                    <select name="status">
+                        <option value="Pending" {% if job["status"] == "Pending" %}selected{% endif %}>
+                            Pending
+                        </option>
 
-    </form>
+                        <option value="Applied" {% if job["status"] == "Applied" %}selected{% endif %}>
+                            Applied
+                        </option>
 
-    <br>
+                        <option value="Interview" {% if job["status"] == "Interview" %}selected{% endif %}>
+                            Interview
+                        </option>
 
-    <a href="/">
-        <button>Back to Jobs</button>
-    </a>
+                        <option value="Selected" {% if job["status"] == "Selected" %}selected{% endif %}>
+                            Selected
+                        </option>
+
+                        <option value="Rejected" {% if job["status"] == "Rejected" %}selected{% endif %}>
+                            Rejected
+                        </option>
+                    </select>
+                </div>
+
+                <div class="form-actions">
+
+                    <button type="submit" class="primary-btn">
+                        Update Job
+                    </button>
+
+                    <a href="/" class="back-btn">
+                        Back to Jobs
+                    </a>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
 
 </body>
 </html>
