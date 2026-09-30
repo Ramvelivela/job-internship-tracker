@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Resume</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+    <div class="container">
+
+        <div class="resume-page">
+
+            <div class="resume-header">
+                <h1>My Resume</h1>
+                <p>Manage your resume from your job tracker.</p>
+            </div>
+
+            <div class="resume-box">
+
+                <div class="resume-icon">
+                    📄
+                </div>
+
+                <h2>Resume</h2>
+
+                <p>
+                    Upload your latest resume and keep it accessible
+                    while tracking your job applications.
+                </p>
+
+                {% if current_resume %}
+
+                    <div class="current-resume">
+
+                        <h3>Current Resume</h3>
+
+                        <p>📄 {{ current_resume }}</p>
+
+                        <div class="resume-file-actions">
+
+                            <a
+                                href="{{ url_for('view_resume', filename=current_resume) }}"
+                                target="_blank"
+                                class="back-btn"
+                            >
+                                👁️ View Resume
+                            </a>
+
+                            <form
+                                action="/delete-resume"
+                                method="POST"
+                                id="deleteResumeForm"
+                            >
+                                <button
+                                    type="button"
+                                    class="delete-btn"
+                                    onclick="openResumeDeleteModal()"
+                                >
+                                    🗑️ Delete Resume
+                                </button>
+                            </form>
+
+                        </div>
+
+                    </div>
+
+                {% else %}
+
+                    <p class="no-resume">
+                        No resume uploaded yet.
+                    </p>
+
+                {% endif %}
+
+                <div class="resume-actions">
+
+                    <form
+                        action="/upload-resume"
+                        method="POST"
+                        enctype="multipart/form-data"
+                    >
+                        <input
+                            type="file"
+                            id="resumeFile"
+                            name="resume"
+                            accept=".pdf,.doc,.docx"
+                            hidden
+                        >
+
+                        <button
+                            type="button"
+                            class="primary-btn"
+                            onclick="document.getElementById('resumeFile').click()"
+                        >
+                            📄 Upload Resume
+                        </button>
+
+                        <button
+                            type="submit"
+                            id="submitResume"
+                            class="primary-btn"
+                            style="display: none;"
+                        >
+                            Upload
+                        </button>
+                    </form>
+
+                    <a href="/" class="back-btn">
+                        Back to Dashboard
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div id="resumeDeleteModal" class="delete-modal">
+
+        <div class="delete-modal-box">
+
+            <h3>
+                Delete your resume?
+            </h3>
+
+            <p>
+                This action cannot be undone.
+            </p>
+
+            <div class="delete-modal-actions">
+
+                <button
+                    type="button"
+                    class="cancel-delete"
+                    onclick="closeResumeDeleteModal()"
+                >
+                    Cancel
+                </button>
+
+                <button
+                    type="button"
+                    class="confirm-delete"
+                    onclick="confirmResumeDelete()"
+                >
+                    Delete
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+        document.getElementById("resumeFile").addEventListener("change", function() {
+            if (this.files.length > 0) {
+                document.getElementById("submitResume").click();
+            }
+        });
+
+        function openResumeDeleteModal() {
+            document.getElementById("resumeDeleteModal").style.display = "flex";
+        }
+
+        function closeResumeDeleteModal() {
+            document.getElementById("resumeDeleteModal").style.display = "none";
+        }
+
+        function confirmResumeDelete() {
+            document.getElementById("deleteResumeForm").submit();
+        }
+        
+    </script>
+
+</body>
+</html>

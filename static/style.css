@@ -510,3 +510,248 @@ body.dark-mode .theme-toggle {
     color: #f9fafb;
     border-color: #4b5563;
 }
+
+/* ---------- Resume Page ---------- */
+
+.resume-page {
+    max-width: 750px;
+    margin: 20px auto;
+}
+
+.resume-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.resume-header h1 {
+    margin: 0;
+    font-size: 34px;
+    color: #172b4d;
+}
+
+.resume-header p {
+    margin-top: 8px;
+    color: #667085;
+}
+
+.resume-box {
+    background: white;
+    border: 1px solid #e3e7ef;
+    border-radius: 16px;
+    padding: 45px 35px;
+    text-align: center;
+    box-shadow: 0 8px 25px rgba(30, 50, 80, 0.08);
+}
+
+.resume-icon {
+    font-size: 55px;
+    margin-bottom: 15px;
+}
+
+.resume-box h2 {
+    margin: 0 0 10px;
+    color: #172b4d;
+}
+
+.resume-box p {
+    max-width: 520px;
+    margin: 0 auto 25px;
+    line-height: 1.6;
+    color: #667085;
+}
+
+.resume-actions {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+}
+
+body.dark-mode .resume-header h1,
+body.dark-mode .resume-box h2 {
+    color: #f9fafb;
+}
+
+body.dark-mode .resume-header p,
+body.dark-mode .resume-box p {
+    color: #cbd5e1;
+}
+
+body.dark-mode .resume-box {
+    background: #1f2937;
+    border-color: #374151;
+    box-shadow: none;
+}
+
+@media (max-width: 500px) {
+    .resume-page {
+        width: 100%;
+    }
+
+    .resume-box {
+        padding: 35px 20px;
+    }
+
+    .resume-actions {
+        flex-direction: column;
+    }
+
+    .resume-actions button,
+    .resume-actions a {
+        width: 100%;
+        text-align: center;
+    }
+}
+
+/* ---------- Resume Manager ---------- */
+
+.current-resume {
+    margin: 30px auto;
+    padding: 22px;
+    max-width: 520px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    text-align: center;
+}
+
+.current-resume h3 {
+    margin: 0 0 12px;
+    color: #172b4d;
+}
+
+.current-resume p {
+    margin: 0 0 18px;
+    color: #667085;
+    font-size: 14px;
+}
+
+.resume-file-actions {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+}
+
+.resume-file-actions form {
+    margin: 0;
+}
+
+.resume-file-actions a,
+.resume-file-actions button {
+    border: none;
+    padding: 9px 16px;
+    border-radius: 7px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.resume-file-actions a {
+    background: #2563eb;
+    color: white;
+}
+
+.resume-file-actions a:hover {
+    background: #1d4ed8;
+}
+
+.resume-file-actions .delete-btn {
+    background: #dc3545;
+    color: white;
+}
+
+.resume-file-actions .delete-btn:hover {
+    background: #b91c1c;
+}
+
+.no-resume {
+    margin: 25px 0;
+    color: #7b8494;
+}
+
+.resume-actions {
+    margin-top: 25px;
+}
+
+/* ---------- Delete Confirmation Modal ---------- */
+
+.delete-modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.45);
+    align-items: center;
+    justify-content: center;
+}
+
+.delete-modal-box {
+    width: 360px;
+    max-width: 90%;
+    background: white;
+    border-radius: 14px;
+    padding: 25px;
+    text-align: center;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.18);
+}
+
+.delete-modal-box h3 {
+    margin: 0 0 8px;
+    color: #172b4d;
+}
+
+.delete-modal-box p {
+    margin: 0 0 22px;
+    color: #667085;
+    font-size: 14px;
+}
+
+.delete-modal-actions {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+.cancel-delete,
+.confirm-delete {
+    border: none;
+    padding: 9px 18px;
+    border-radius: 7px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.cancel-delete {
+    background: #e5e7eb;
+    color: #374151;
+}
+
+.confirm-delete {
+    background: #dc3545;
+    color: white;
+}
+
+.confirm-delete:hover {
+    background: #b91c1c;
+}
+
+/* ---------- Saved Opportunities Summary ---------- */
+
+.stats-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 30px;
+}
+
+.stats-container .stat-box {
+    width: 100%;
+    max-width: 700px;
+}
+
+.stats-container .stat-box small {
+    display: block;
+    margin-top: 8px;
+    color: #64748b;
+    font-size: 14px;
+}

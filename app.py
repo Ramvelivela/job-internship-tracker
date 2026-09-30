@@ -1,5 +1,7 @@
-from flask import Flask, render_template, request, redirect
+from flask import Flask, render_template, request, redirect, send_from_directory
 import sqlite3
+import os
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 
@@ -92,8 +94,8 @@ def add_job():
         cursor = connection.cursor()
 
         cursor.execute("""
-            INSERT INTO jobs (company, role, location, link)
-            VALUES (?, ?, ?, ?)
+            INSERT INTO jobs (company, role, location, link, status)
+            VALUES (?, ?, ?, ?, ?)
         """, (company, role, location, link, status))
 
         connection.commit()
@@ -172,6 +174,57 @@ def edit_job(job_id):
     return render_template("edit_job.html", job=job)
 
     return render_template("add_job.html")
+
+
+@app.route("/resume")
+def resume():
+    resumes = os.listdir("uploads")
+
+    current_resume = resumes[0] if resumes else None
+
+    return render_template(
+        "resume.html",
+        current_resume=current_resume
+    )
+
+
+@app.route("/upload-resume", methods=["POST"])
+def upload_resume():
+    if "resume" not in request.files:
+        return redirect("/resume")
+
+    file = request.files["resume"]
+
+    if file.filename == "":
+        return redirect("/resume")
+
+    filename = secure_filename(file.filename)
+
+    # Delete existing resume
+    for old_file in os.listdir("uploads"):
+        old_path = os.path.join("uploads", old_file)
+
+        if os.path.isfile(old_path):
+            os.remove(old_path)
+
+    # Save new resume
+    file.save(os.path.join("uploads", filename))
+
+    return redirect("/resume")
+
+@app.route("/view-resume/<filename>")
+def view_resume(filename):
+    return send_from_directory("uploads", filename)
+
+@app.route("/delete-resume", methods=["POST"])
+def delete_resume():
+    for filename in os.listdir("uploads"):
+        file_path = os.path.join("uploads", filename)
+
+        if os.path.isfile(file_path):
+            os.remove(file_path)
+
+    return redirect("/resume")
 
 
 if __name__ == "__main__":
