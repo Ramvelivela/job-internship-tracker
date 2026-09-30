@@ -7,6 +7,10 @@
 
 <body>
 
+    <button id="themeToggle" class="theme-toggle" onclick="toggleTheme()">
+        🌙 Dark Mode
+    </button>
+
     <div class="container">
 
         <header class="hero">
@@ -316,6 +320,18 @@
             });
         }
 
+        function toggleTheme() {
+             document.body.classList.toggle("dark-mode");
+
+            let button = document.getElementById("themeToggle");
+
+            if (document.body.classList.contains("dark-mode")) {
+                button.innerHTML = "☀️ Light Mode";
+            } else {
+                button.innerHTML = "🌙 Dark Mode";
+            }
+        }
+        
     </script>
 
 </body>
