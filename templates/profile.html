@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Profile - Job & Internship Tracker</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+<div class="profile-page">
+
+    <!-- Top Bar -->
+    <div class="profile-topbar">
+
+        <a href="/" class="profile-back">
+            ←
+        </a>
+
+        <h1>Profile</h1>
+
+        <button type="button" onclick="toggleTheme()" class="theme-icon">
+            🎨
+        </button>
+
+    </div>
+
+
+    <!-- Profile Header -->
+    <div class="profile-header-card">
+
+        <div class="profile-avatar">
+            👤
+        </div>
+
+        <div class="profile-user-info">
+
+            <h2>
+                {{ user['full_name'] or user['username'] }}
+            </h2>
+
+            <p>
+                {{ user['email'] }}
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <!-- Profile Completion -->
+    <div class="profile-completion">
+
+        <div class="completion-text">
+
+            <strong>{{ completion }}%</strong>
+
+            <span>
+                Profile completed
+            </span>
+
+        </div>
+
+        <div class="completion-bar">
+
+            <div
+                class="completion-progress"
+                style="width: {{ completion }}%;">
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- Profile Menu -->
+    <div class="profile-menu">
+
+        <a href="/personal-details" class="profile-menu-item">
+
+            <span class="menu-icon">👤</span>
+
+            <span>Personal Details</span>
+
+            <span class="menu-arrow">›</span>
+
+        </a>
+
+
+        <a href="/qualifications" class="profile-menu-item">
+
+            <span class="menu-icon">🎓</span>
+
+            <span>Qualifications</span>
+
+            <span class="menu-arrow">›</span>
+
+        </a>
+
+
+        <a href="/job-preferences" class="profile-menu-item">
+
+            <span class="menu-icon">💼</span>
+
+            <span>Job Preferences</span>
+
+            <span class="menu-arrow">›</span>
+
+        </a>
+
+
+        <a href="/resume" class="profile-menu-item">
+
+            <span class="menu-icon">📄</span>
+
+            <span>Resume</span>
+
+            <span class="menu-arrow">›</span>
+
+        </a>
+
+
+        <a href="/profile-settings" class="profile-menu-item">
+
+            <span class="menu-icon">⚙️</span>
+
+            <span>Profile Settings</span>
+
+            <span class="menu-arrow">›</span>
+
+        </a>
+
+
+        <a href="/change-password" class="profile-menu-item">
+
+            <span class="menu-icon">🔐</span>
+
+            <span>Change Password</span>
+
+            <span class="menu-arrow">›</span>
+
+        </a>
+
+
+        <a href="/logout" class="profile-menu-item logout-item">
+
+            <span class="menu-icon">🚪</span>
+
+            <span>Logout</span>
+
+            <span class="menu-arrow">›</span>
+
+        </a>
+
+    </div>
+
+</div>
+
+
+<script>
+
+function toggleTheme() {
+
+    document.body.classList.toggle("dark-mode");
+
+    if (document.body.classList.contains("dark-mode")) {
+
+        localStorage.setItem("theme", "dark");
+
+    } else {
+
+        localStorage.setItem("theme", "light");
+
+    }
+
+}
+
+
+if (localStorage.getItem("theme") === "dark") {
+
+    document.body.classList.add("dark-mode");
+
+}
+
+</script>
+
+</body>
+</html>

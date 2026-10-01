@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Personal Details - Job & Internship Tracker</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+<div class="profile-page">
+
+    <div class="profile-topbar">
+
+        <a href="/profile" class="profile-back">
+            ←
+        </a>
+
+        <h1>Personal Details</h1>
+
+        <button type="button"
+                onclick="toggleTheme()"
+                class="theme-icon">
+            🎨
+        </button>
+
+    </div>
+
+
+    <section class="profile-section">
+
+        <h2>👤 Personal Details</h2>
+
+        <form method="POST" class="profile-form">
+
+            <div class="profile-field">
+                <label>Username</label>
+
+                <input
+                    type="text"
+                    value="{{ user['username'] }}"
+                    disabled>
+            </div>
+
+
+            <div class="profile-field">
+                <label>Email</label>
+
+                <input
+                    type="email"
+                    value="{{ user['email'] }}"
+                    disabled>
+            </div>
+
+
+            <div class="profile-field">
+                <label>Full Name</label>
+
+                <input
+                    type="text"
+                    name="full_name"
+                    value="{{ user['full_name'] or '' }}"
+                    placeholder="Enter your full name">
+            </div>
+
+
+            <div class="profile-field">
+                <label>Phone</label>
+
+                <input
+                    type="tel"
+                    name="phone"
+                    value="{{ user['phone'] or '' }}"
+                    placeholder="Enter phone number">
+            </div>
+
+
+            <div class="profile-field">
+                <label>Location</label>
+
+                <input
+                    type="text"
+                    name="location"
+                    value="{{ user['location'] or '' }}"
+                    placeholder="Enter your location">
+            </div>
+
+
+            <div class="profile-field">
+                <label>Bio</label>
+
+                <textarea
+                    name="bio"
+                    rows="5"
+                    placeholder="Tell something about yourself">{{ user['bio'] or '' }}</textarea>
+            </div>
+
+
+            <div class="form-actions">
+
+                <button type="submit"
+                        class="save-profile-btn">
+                    Save Changes
+                </button>
+
+                <a href="/profile"
+                   class="back-btn">
+                    Cancel
+                </a>
+
+            </div>
+
+        </form>
+
+    </section>
+
+</div>
+
+
+<script>
+
+function toggleTheme() {
+
+    document.body.classList.toggle("dark-mode");
+
+    if (document.body.classList.contains("dark-mode")) {
+
+        localStorage.setItem("theme", "dark");
+
+    } else {
+
+        localStorage.setItem("theme", "light");
+
+    }
+
+}
+
+
+if (localStorage.getItem("theme") === "dark") {
+
+    document.body.classList.add("dark-mode");
+
+}
+
+</script>
+
+</body>
+</html>
