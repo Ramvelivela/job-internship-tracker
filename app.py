@@ -3,8 +3,10 @@ import sqlite3
 import os
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
+from database import create_database
 
 app = Flask(__name__)
+create_database()
 app.secret_key = "job_tracker_secret_key"
 
 def login_required():
