@@ -1,34 +1,65 @@
-from flask import Flask, render_template, request, redirect, send_from_directory
+from flask import Flask, render_template, request, redirect, send_from_directory, session
 import sqlite3
 import os
 from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
+app.secret_key = "job_tracker_secret_key"
+
+def login_required():
+    if not session.get("logged_in"):
+        return redirect("/login")
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        username = request.form["username"]
+        password = request.form["password"]
+
+        if username == "admin" and password == "1234":
+            session["logged_in"] = True
+            return redirect("/")
+
+        return "Invalid username or password"
+
+    return render_template("login.html")
+
+@app.route("/logout")
+def logout():
+    session.pop("logged_in", None)
+    return redirect("/login")
 
 
 @app.route("/")
 def home():
-    connection = sqlite3.connect("jobs.db")
-    connection.row_factory = sqlite3.Row
 
-    cursor = connection.cursor()
+        check = login_required()
+        if check:
+            return check
+        connection = sqlite3.connect("jobs.db")
+        connection.row_factory = sqlite3.Row
 
-    cursor.execute("SELECT * FROM jobs")
-    jobs = cursor.fetchall()
+        cursor = connection.cursor()
 
-    cursor.execute("SELECT * FROM internships")
-    internships = cursor.fetchall()
+        cursor.execute("SELECT * FROM jobs")
+        jobs = cursor.fetchall()
 
-    connection.close()
+        cursor.execute("SELECT * FROM internships")
+        internships = cursor.fetchall()
 
-    return render_template(
-        "index.html",
-        jobs=jobs,
-        internships=internships
-    )
+        connection.close()
+
+        return render_template(
+            "index.html",
+            jobs=jobs,
+            internships=internships
+        )
 
 @app.route("/delete-internship/<int:internship_id>")
 def delete_internship(internship_id):
+    check = login_required()
+    if check:
+        return check
     connection = sqlite3.connect("jobs.db")
     cursor = connection.cursor()
 
@@ -44,6 +75,9 @@ def delete_internship(internship_id):
 
 @app.route("/edit-internship/<int:internship_id>", methods=["GET", "POST"])
 def edit_internship(internship_id):
+    check = login_required()
+    if check:
+        return check
     connection = sqlite3.connect("jobs.db")
     connection.row_factory = sqlite3.Row
     cursor = connection.cursor()
@@ -82,6 +116,9 @@ def edit_internship(internship_id):
 
 @app.route("/add-job", methods=["GET", "POST"])
 def add_job():
+    check = login_required()
+    if check:
+        return check
     if request.method == "POST":
         company = request.form["company"]
         role = request.form["role"]
@@ -106,6 +143,9 @@ def add_job():
 
 @app.route("/add-internship", methods=["GET", "POST"])
 def add_internship():
+    check = login_required()
+    if check:
+        return check
     if request.method == "POST":
         company = request.form["company"]
         role = request.form["role"]
@@ -117,8 +157,8 @@ def add_internship():
         cursor = connection.cursor()
 
         cursor.execute("""
-            INSERT INTO internships (company, role, location, link)
-            VALUES (?, ?, ?, ?)
+            INSERT INTO internships (company, role, location, link, status)
+            VALUES (?, ?, ?, ?,?)
         """, (company, role, location, link, status))
 
         connection.commit()
@@ -131,6 +171,9 @@ def add_internship():
 
 @app.route("/delete-job/<int:job_id>")
 def delete_job(job_id):
+    check = login_required()
+    if check:
+        return check
     connection = sqlite3.connect("jobs.db")
     cursor = connection.cursor()
 
@@ -144,6 +187,9 @@ def delete_job(job_id):
 
 @app.route("/edit-job/<int:job_id>", methods=["GET", "POST"])
 def edit_job(job_id):
+    check = login_required()
+    if check:
+        return check
     connection = sqlite3.connect("jobs.db")
     connection.row_factory = sqlite3.Row
     cursor = connection.cursor()
@@ -178,6 +224,9 @@ def edit_job(job_id):
 
 @app.route("/resume")
 def resume():
+    check = login_required()
+    if check:
+        return check
     resumes = os.listdir("uploads")
 
     current_resume = resumes[0] if resumes else None
@@ -190,6 +239,9 @@ def resume():
 
 @app.route("/upload-resume", methods=["POST"])
 def upload_resume():
+    check = login_required()
+    if check:
+        return check
     if "resume" not in request.files:
         return redirect("/resume")
 
@@ -214,10 +266,16 @@ def upload_resume():
 
 @app.route("/view-resume/<filename>")
 def view_resume(filename):
+    check = login_required()
+    if check:
+        return check
     return send_from_directory("uploads", filename)
 
 @app.route("/delete-resume", methods=["POST"])
 def delete_resume():
+    check = login_required()
+    if check:
+        return check
     for filename in os.listdir("uploads"):
         file_path = os.path.join("uploads", filename)
 

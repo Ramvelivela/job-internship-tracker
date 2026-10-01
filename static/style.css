@@ -755,3 +755,22 @@ body.dark-mode .resume-box {
     color: #64748b;
     font-size: 14px;
 }
+
+/* ---------- Logout Button ---------- */
+
+.logout-btn {
+    display: inline-block;
+    margin-bottom: 18px;
+    padding: 9px 16px;
+    border: 1px solid #f0c7c7;
+    border-radius: 8px;
+    background: white;
+    color: #dc3545;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.logout-btn:hover {
+    background: #fff5f5;
+}
