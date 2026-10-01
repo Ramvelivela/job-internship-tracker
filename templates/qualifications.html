@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Qualifications - Job & Internship Tracker</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+</head>
+
+<body>
+
+<div class="profile-page">
+
+    <div class="profile-topbar">
+
+        <a href="/profile" class="profile-back">
+            ←
+        </a>
+
+        <h1>Qualifications</h1>
+
+        <button
+            type="button"
+            onclick="toggleTheme()"
+            class="theme-icon"
+        >
+            🎨
+        </button>
+
+    </div>
+
+
+    <section class="profile-section">
+
+        <h2>🎓 Education Details</h2>
+
+        <form method="POST" class="profile-form">
+
+            <div class="profile-field">
+                <label>Degree</label>
+
+                <input
+                    type="text"
+                    name="degree"
+                    value="{{ qualification['degree'] if qualification else '' }}"
+                    placeholder="e.g. B.Tech"
+                    required
+                >
+            </div>
+
+
+            <div class="profile-field">
+                <label>Branch / Specialization</label>
+
+                <input
+                    type="text"
+                    name="branch"
+                    value="{{ qualification['branch'] if qualification else '' }}"
+                    placeholder="e.g. Computer Science and Engineering"
+                    required
+                >
+            </div>
+
+
+            <div class="profile-field">
+                <label>College / University</label>
+
+                <input
+                    type="text"
+                    name="college"
+                    value="{{ qualification['college'] if qualification else '' }}"
+                    placeholder="Enter college or university"
+                    required
+                >
+            </div>
+
+
+            <div class="profile-field">
+                <label>Graduation Year</label>
+
+                <input
+                    type="text"
+                    name="graduation_year"
+                    value="{{ qualification['graduation_year'] if qualification else '' }}"
+                    placeholder="e.g. 2026"
+                >
+            </div>
+
+
+            <div class="profile-field">
+                <label>CGPA</label>
+
+                <input
+                    type="text"
+                    name="cgpa"
+                    value="{{ qualification['cgpa'] if qualification else '' }}"
+                    placeholder="e.g. 8.54"
+                >
+            </div>
+
+
+            <div class="form-actions">
+
+                <button
+                    type="submit"
+                    class="save-profile-btn"
+                >
+                    Save Qualifications
+                </button>
+
+                <a
+                    href="/profile"
+                    class="back-btn"
+                >
+                    Cancel
+                </a>
+
+            </div>
+
+        </form>
+
+    </section>
+
+</div>
+
+
+<script>
+
+function toggleTheme() {
+
+    document.body.classList.toggle("dark-mode");
+
+    if (document.body.classList.contains("dark-mode")) {
+
+        localStorage.setItem("theme", "dark");
+
+    } else {
+
+        localStorage.setItem("theme", "light");
+
+    }
+}
+
+
+if (localStorage.getItem("theme") === "dark") {
+
+    document.body.classList.add("dark-mode");
+
+}
+
+</script>
+
+</body>
+</html>

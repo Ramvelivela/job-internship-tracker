@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Job Preferences - Job & Internship Tracker</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+
+</head>
+
+
+<body>
+
+<div class="profile-page">
+
+    <div class="profile-topbar">
+
+        <a href="/profile" class="profile-back">
+            ←
+        </a>
+
+        <h1>Job Preferences</h1>
+
+        <button
+            type="button"
+            onclick="toggleTheme()"
+            class="theme-icon"
+        >
+            🎨
+        </button>
+
+    </div>
+
+
+    <section class="profile-section">
+
+        <h2>💼 Career Preferences</h2>
+
+
+        <form method="POST" class="profile-form">
+
+
+            <div class="profile-field">
+
+                <label>Preferred Role</label>
+
+                <input
+                    type="text"
+                    name="preferred_role"
+                    value="{{ preferences['preferred_role'] if preferences else '' }}"
+                    placeholder="e.g. Software Developer"
+                >
+
+            </div>
+
+
+            <div class="profile-field">
+
+                <label>Preferred Location</label>
+
+                <input
+                    type="text"
+                    name="preferred_location"
+                    value="{{ preferences['preferred_location'] if preferences else '' }}"
+                    placeholder="e.g. Hyderabad, Bengaluru, Remote"
+                >
+
+            </div>
+
+
+            <div class="profile-field">
+
+                <label>Employment Type</label>
+
+                <select
+                    name="employment_type"
+                >
+
+                    <option value="">
+                        Select employment type
+                    </option>
+
+                    <option
+                        value="Full-time"
+                        {% if preferences and preferences['employment_type'] == 'Full-time' %}selected{% endif %}
+                    >
+                        Full-time
+                    </option>
+
+                    <option
+                        value="Internship"
+                        {% if preferences and preferences['employment_type'] == 'Internship' %}selected{% endif %}
+                    >
+                        Internship
+                    </option>
+
+                    <option
+                        value="Part-time"
+                        {% if preferences and preferences['employment_type'] == 'Part-time' %}selected{% endif %}
+                    >
+                        Part-time
+                    </option>
+
+                    <option
+                        value="Contract"
+                        {% if preferences and preferences['employment_type'] == 'Contract' %}selected{% endif %}
+                    >
+                        Contract
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="profile-field">
+
+                <label>Work Mode</label>
+
+                <select name="work_mode">
+
+                    <option value="">
+                        Select work mode
+                    </option>
+
+                    <option
+                        value="On-site"
+                        {% if preferences and preferences['work_mode'] == 'On-site' %}selected{% endif %}
+                    >
+                        On-site
+                    </option>
+
+                    <option
+                        value="Remote"
+                        {% if preferences and preferences['work_mode'] == 'Remote' %}selected{% endif %}
+                    >
+                        Remote
+                    </option>
+
+                    <option
+                        value="Hybrid"
+                        {% if preferences and preferences['work_mode'] == 'Hybrid' %}selected{% endif %}
+                    >
+                        Hybrid
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="profile-field">
+
+                <label>Expected Salary</label>
+
+                <input
+                    type="text"
+                    name="expected_salary"
+                    value="{{ preferences['expected_salary'] if preferences else '' }}"
+                    placeholder="e.g. 6 LPA"
+                >
+
+            </div>
+
+
+            <div class="form-actions">
+
+                <button
+                    type="submit"
+                    class="save-profile-btn"
+                >
+                    Save Preferences
+                </button>
+
+                <a
+                    href="/profile"
+                    class="back-btn"
+                >
+                    Cancel
+                </a>
+
+            </div>
+
+
+        </form>
+
+    </section>
+
+</div>
+
+
+<script>
+
+function toggleTheme() {
+
+    document.body.classList.toggle("dark-mode");
+
+    if (document.body.classList.contains("dark-mode")) {
+
+        localStorage.setItem("theme", "dark");
+
+    } else {
+
+        localStorage.setItem("theme", "light");
+
+    }
+
+}
+
+
+if (localStorage.getItem("theme") === "dark") {
+
+    document.body.classList.add("dark-mode");
+
+}
+
+</script>
+
+</body>
+
+</html>

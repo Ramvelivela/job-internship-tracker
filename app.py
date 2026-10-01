@@ -464,6 +464,304 @@ def delete_resume():
 
     return redirect("/resume")
 
+# =========================================================
+# QUALIFICATIONS
+# =========================================================
+
+@app.route("/qualifications", methods=["GET", "POST"])
+def qualifications():
+    check = login_required()
+    if check:
+        return check
+
+    connection = sqlite3.connect("jobs.db")
+    connection.row_factory = sqlite3.Row
+    cursor = connection.cursor()
+
+    if request.method == "POST":
+        degree = request.form["degree"]
+        branch = request.form["branch"]
+        college = request.form["college"]
+        graduation_year = request.form["graduation_year"]
+        cgpa = request.form["cgpa"]
+
+        cursor.execute("""
+            SELECT id FROM qualifications
+            WHERE user_id = ?
+        """, (session["user_id"],))
+
+        existing = cursor.fetchone()
+
+        if existing:
+            cursor.execute("""
+                UPDATE qualifications
+                SET degree = ?,
+                    branch = ?,
+                    college = ?,
+                    graduation_year = ?,
+                    cgpa = ?
+                WHERE user_id = ?
+            """, (
+                degree,
+                branch,
+                college,
+                graduation_year,
+                cgpa,
+                session["user_id"]
+            ))
+        else:
+            cursor.execute("""
+                INSERT INTO qualifications
+                (
+                    user_id,
+                    degree,
+                    branch,
+                    college,
+                    graduation_year,
+                    cgpa
+                )
+                VALUES (?, ?, ?, ?, ?, ?)
+            """, (
+                session["user_id"],
+                degree,
+                branch,
+                college,
+                graduation_year,
+                cgpa
+            ))
+
+        connection.commit()
+        connection.close()
+
+        return redirect("/profile")
+
+    cursor.execute("""
+        SELECT * FROM qualifications
+        WHERE user_id = ?
+    """, (session["user_id"],))
+
+    qualification = cursor.fetchone()
+
+    connection.close()
+
+    return render_template(
+        "qualifications.html",
+        qualification=qualification
+    )
+
+
+# =========================================================
+# JOB PREFERENCES
+# =========================================================
+
+@app.route("/job-preferences", methods=["GET", "POST"])
+def job_preferences():
+    check = login_required()
+    if check:
+        return check
+
+    connection = sqlite3.connect("jobs.db")
+    connection.row_factory = sqlite3.Row
+    cursor = connection.cursor()
+
+    if request.method == "POST":
+        preferred_role = request.form["preferred_role"]
+        preferred_location = request.form["preferred_location"]
+        employment_type = request.form["employment_type"]
+        work_mode = request.form["work_mode"]
+        expected_salary = request.form["expected_salary"]
+
+        cursor.execute("""
+            SELECT id FROM job_preferences
+            WHERE user_id = ?
+        """, (session["user_id"],))
+
+        existing = cursor.fetchone()
+
+        if existing:
+            cursor.execute("""
+                UPDATE job_preferences
+                SET preferred_role = ?,
+                    preferred_location = ?,
+                    employment_type = ?,
+                    work_mode = ?,
+                    expected_salary = ?
+                WHERE user_id = ?
+            """, (
+                preferred_role,
+                preferred_location,
+                employment_type,
+                work_mode,
+                expected_salary,
+                session["user_id"]
+            ))
+        else:
+            cursor.execute("""
+                INSERT INTO job_preferences
+                (
+                    user_id,
+                    preferred_role,
+                    preferred_location,
+                    employment_type,
+                    work_mode,
+                    expected_salary
+                )
+                VALUES (?, ?, ?, ?, ?, ?)
+            """, (
+                session["user_id"],
+                preferred_role,
+                preferred_location,
+                employment_type,
+                work_mode,
+                expected_salary
+            ))
+
+        connection.commit()
+        connection.close()
+
+        return redirect("/profile")
+
+    cursor.execute("""
+        SELECT * FROM job_preferences
+        WHERE user_id = ?
+    """, (session["user_id"],))
+
+    preferences = cursor.fetchone()
+
+    connection.close()
+
+    return render_template(
+        "job_preferences.html",
+        preferences=preferences
+    )
+
+
+# =========================================================
+# PROFILE SETTINGS
+# =========================================================
+
+@app.route("/profile-settings", methods=["GET", "POST"])
+def profile_settings():
+    check = login_required()
+    if check:
+        return check
+
+    connection = sqlite3.connect("jobs.db")
+    connection.row_factory = sqlite3.Row
+    cursor = connection.cursor()
+
+    if request.method == "POST":
+        username = request.form["username"]
+        email = request.form["email"]
+
+        try:
+            cursor.execute("""
+                UPDATE users
+                SET username = ?, email = ?
+                WHERE id = ?
+            """, (
+                username,
+                email,
+                session["user_id"]
+            ))
+
+            connection.commit()
+
+            session["username"] = username
+
+        except sqlite3.IntegrityError:
+            connection.close()
+
+            return render_template(
+                "profile_settings.html",
+                user={
+                    "username": username,
+                    "email": email
+                },
+                error="Username or email already exists."
+            )
+
+    cursor.execute("""
+        SELECT * FROM users
+        WHERE id = ?
+    """, (session["user_id"],))
+
+    user = cursor.fetchone()
+
+    connection.close()
+
+    return render_template(
+        "profile_settings.html",
+        user=user
+    )
+
+
+# =========================================================
+# CHANGE PASSWORD
+# =========================================================
+
+@app.route("/change-password", methods=["GET", "POST"])
+def change_password():
+    check = login_required()
+    if check:
+        return check
+
+    error = None
+    success = None
+
+    if request.method == "POST":
+        current_password = request.form["current_password"]
+        new_password = request.form["new_password"]
+        confirm_password = request.form["confirm_password"]
+
+        connection = sqlite3.connect("jobs.db")
+        connection.row_factory = sqlite3.Row
+        cursor = connection.cursor()
+
+        cursor.execute("""
+            SELECT * FROM users
+            WHERE id = ?
+        """, (session["user_id"],))
+
+        user = cursor.fetchone()
+
+        if not check_password_hash(
+            user["password_hash"],
+            current_password
+        ):
+            error = "Current password is incorrect."
+
+        elif new_password != confirm_password:
+            error = "New passwords do not match."
+
+        elif len(new_password) < 6:
+            error = "New password must be at least 6 characters."
+
+        else:
+            new_password_hash = generate_password_hash(
+                new_password
+            )
+
+            cursor.execute("""
+                UPDATE users
+                SET password_hash = ?
+                WHERE id = ?
+            """, (
+                new_password_hash,
+                session["user_id"]
+            ))
+
+            connection.commit()
+            success = "Password changed successfully."
+
+        connection.close()
+
+    return render_template(
+        "change_password.html",
+        error=error,
+        success=success
+    )
+
 
 if __name__ == "__main__":
     app.run(debug=True)

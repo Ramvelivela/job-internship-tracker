@@ -1132,3 +1132,84 @@ body.dark-mode .resume-box {
         padding: 16px;
     }
 }
+
+/* =========================================================
+   PROFILE EXTRA PAGES
+   ========================================================= */
+
+.profile-field select {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px 14px;
+    border: 1px solid #d0d5dd;
+    border-radius: 9px;
+    font-size: 14px;
+    font-family: inherit;
+    background: white;
+    color: #344054;
+    outline: none;
+}
+
+.profile-field select:focus {
+    border-color: #1677b7;
+    box-shadow: 0 0 0 3px rgba(22, 119, 183, 0.1);
+}
+
+.form-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 8px;
+}
+
+.back-btn {
+    display: inline-block;
+    padding: 11px 20px;
+    border: 1px solid #d0d5dd;
+    border-radius: 9px;
+    background: white;
+    color: #344054;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.back-btn:hover {
+    background: #f5f7fb;
+}
+
+.profile-error {
+    padding: 12px 15px;
+    margin-bottom: 18px;
+    border-radius: 9px;
+    background: #fff1f2;
+    border: 1px solid #fecdd3;
+    color: #be123c;
+    font-size: 14px;
+}
+
+.profile-success {
+    padding: 12px 15px;
+    margin-bottom: 18px;
+    border-radius: 9px;
+    background: #ecfdf3;
+    border: 1px solid #abefc6;
+    color: #067647;
+    font-size: 14px;
+}
+
+@media (max-width: 600px) {
+
+    .form-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .save-profile-btn,
+    .back-btn {
+        width: 100%;
+        text-align: center;
+        box-sizing: border-box;
+    }
+
+}
