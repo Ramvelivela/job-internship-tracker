@@ -1,20 +1,166 @@
-from flask import (Flask, render_template, request, redirect, send_from_directory, session)
+from flask import (
+    Flask,
+    render_template,
+    request,
+    redirect,
+    send_from_directory,
+    session
+)
 
 import sqlite3
 import os
 
+import psycopg
+from psycopg.rows import dict_row
+
 from werkzeug.utils import secure_filename
-from werkzeug.security import (generate_password_hash, check_password_hash)
+from werkzeug.security import (
+    generate_password_hash,
+    check_password_hash
+)
 
 from database import create_database
 
 
 app = Flask(__name__)
-
 app.secret_key = "job_tracker_secret_key"
 
-# Create database/tables when the application starts
-create_database()
+
+# =========================================================
+# DATABASE CONNECTION
+# =========================================================
+
+def get_connection():
+    database_url = os.getenv("DATABASE_URL")
+
+    # Render / PostgreSQL
+    if database_url:
+        return psycopg.connect(
+            database_url,
+            cursor_factory=RealDictCursor
+        )
+
+    # Local / SQLite
+    connection = sqlite3.connect("jobs.db")
+    connection.row_factory = sqlite3.Row
+    return connection
+
+
+def db_execute(cursor, query, params=()):
+    """
+    SQLite uses ?
+    PostgreSQL uses %s
+
+    This helper automatically converts ? to %s
+    when running on PostgreSQL.
+    """
+    if os.getenv("DATABASE_URL"):
+        query = query.replace("?", "%s")
+
+    cursor.execute(query, params)
+
+
+# =========================================================
+# DATABASE INITIALIZATION
+# =========================================================
+
+def initialize_database():
+    """
+    Local:
+        Uses existing database.py SQLite setup.
+
+    Render:
+        Creates PostgreSQL tables.
+    """
+
+    database_url = os.getenv("DATABASE_URL")
+
+    if not database_url:
+        create_database()
+        return
+
+    connection = get_connection()
+    cursor = connection.cursor()
+
+    # ---------------- USERS ----------------
+
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            id SERIAL PRIMARY KEY,
+            username TEXT UNIQUE NOT NULL,
+            email TEXT UNIQUE NOT NULL,
+            password_hash TEXT NOT NULL,
+            full_name TEXT,
+            phone TEXT,
+            location TEXT,
+            bio TEXT,
+            profile_picture TEXT
+        )
+    """)
+
+    # ---------------- JOBS ----------------
+
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS jobs (
+            id SERIAL PRIMARY KEY,
+            company TEXT NOT NULL,
+            role TEXT NOT NULL,
+            location TEXT,
+            link TEXT,
+            status TEXT DEFAULT 'Pending',
+            user_id INTEGER
+        )
+    """)
+
+    # ---------------- INTERNSHIPS ----------------
+
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS internships (
+            id SERIAL PRIMARY KEY,
+            company TEXT NOT NULL,
+            role TEXT NOT NULL,
+            location TEXT,
+            link TEXT,
+            status TEXT DEFAULT 'Pending',
+            user_id INTEGER
+        )
+    """)
+
+    # ---------------- QUALIFICATIONS ----------------
+
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS qualifications (
+            id SERIAL PRIMARY KEY,
+            user_id INTEGER UNIQUE NOT NULL,
+            degree TEXT,
+            branch TEXT,
+            college TEXT,
+            graduation_year TEXT,
+            cgpa TEXT
+        )
+    """)
+
+    # ---------------- JOB PREFERENCES ----------------
+
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS job_preferences (
+            id SERIAL PRIMARY KEY,
+            user_id INTEGER UNIQUE NOT NULL,
+            preferred_role TEXT,
+            preferred_location TEXT,
+            employment_type TEXT,
+            work_mode TEXT,
+            expected_salary TEXT
+        )
+    """)
+
+    connection.commit()
+    connection.close()
+
+
+# Create database/tables when application starts
+initialize_database()
+
 
 # Make sure uploads folder exists
 os.makedirs("uploads", exist_ok=True)
@@ -48,12 +194,12 @@ def register():
 
         password_hash = generate_password_hash(password)
 
-        connection = sqlite3.connect("jobs.db")
+        connection = get_connection()
         cursor = connection.cursor()
 
         try:
 
-            cursor.execute("""
+            db_execute(cursor, """
                 INSERT INTO users (
                     username,
                     email,
@@ -68,8 +214,9 @@ def register():
 
             connection.commit()
 
-        except sqlite3.IntegrityError:
+        except (sqlite3.IntegrityError, psycopg.IntegrityError):
 
+            connection.rollback()
             connection.close()
 
             return "Username or email already exists"
@@ -93,12 +240,10 @@ def login():
         username_or_email = request.form["username"]
         password = request.form["password"]
 
-        connection = sqlite3.connect("jobs.db")
-        connection.row_factory = sqlite3.Row
-
+        connection = get_connection()
         cursor = connection.cursor()
 
-        cursor.execute("""
+        db_execute(cursor, """
             SELECT *
             FROM users
             WHERE username = ?
@@ -155,12 +300,10 @@ def home():
     if check:
         return check
 
-    connection = sqlite3.connect("jobs.db")
-    connection.row_factory = sqlite3.Row
-
+    connection = get_connection()
     cursor = connection.cursor()
 
-    cursor.execute("""
+    db_execute(cursor, """
         SELECT *
         FROM jobs
         WHERE user_id = ?
@@ -170,7 +313,7 @@ def home():
 
     jobs = cursor.fetchall()
 
-    cursor.execute("""
+    db_execute(cursor, """
         SELECT *
         FROM internships
         WHERE user_id = ?
@@ -209,10 +352,10 @@ def add_job():
         link = request.form["link"]
         status = request.form["status"]
 
-        connection = sqlite3.connect("jobs.db")
+        connection = get_connection()
         cursor = connection.cursor()
 
-        cursor.execute("""
+        db_execute(cursor, """
             INSERT INTO jobs (
                 company,
                 role,
@@ -259,10 +402,10 @@ def add_internship():
         link = request.form["link"]
         status = request.form["status"]
 
-        connection = sqlite3.connect("jobs.db")
+        connection = get_connection()
         cursor = connection.cursor()
 
-        cursor.execute("""
+        db_execute(cursor, """
             INSERT INTO internships (
                 company,
                 role,
@@ -301,10 +444,10 @@ def delete_job(job_id):
     if check:
         return check
 
-    connection = sqlite3.connect("jobs.db")
+    connection = get_connection()
     cursor = connection.cursor()
 
-    cursor.execute("""
+    db_execute(cursor, """
         DELETE FROM jobs
         WHERE id = ?
           AND user_id = ?
@@ -331,10 +474,10 @@ def delete_internship(internship_id):
     if check:
         return check
 
-    connection = sqlite3.connect("jobs.db")
+    connection = get_connection()
     cursor = connection.cursor()
 
-    cursor.execute("""
+    db_execute(cursor, """
         DELETE FROM internships
         WHERE id = ?
           AND user_id = ?
@@ -361,9 +504,7 @@ def edit_job(job_id):
     if check:
         return check
 
-    connection = sqlite3.connect("jobs.db")
-    connection.row_factory = sqlite3.Row
-
+    connection = get_connection()
     cursor = connection.cursor()
 
     if request.method == "POST":
@@ -374,7 +515,7 @@ def edit_job(job_id):
         link = request.form["link"]
         status = request.form["status"]
 
-        cursor.execute("""
+        db_execute(cursor, """
             UPDATE jobs
             SET company = ?,
                 role = ?,
@@ -398,7 +539,7 @@ def edit_job(job_id):
 
         return redirect("/")
 
-    cursor.execute("""
+    db_execute(cursor, """
         SELECT *
         FROM jobs
         WHERE id = ?
@@ -433,9 +574,7 @@ def edit_internship(internship_id):
     if check:
         return check
 
-    connection = sqlite3.connect("jobs.db")
-    connection.row_factory = sqlite3.Row
-
+    connection = get_connection()
     cursor = connection.cursor()
 
     if request.method == "POST":
@@ -446,7 +585,7 @@ def edit_internship(internship_id):
         link = request.form["link"]
         status = request.form["status"]
 
-        cursor.execute("""
+        db_execute(cursor, """
             UPDATE internships
             SET company = ?,
                 role = ?,
@@ -470,7 +609,7 @@ def edit_internship(internship_id):
 
         return redirect("/")
 
-    cursor.execute("""
+    db_execute(cursor, """
         SELECT *
         FROM internships
         WHERE id = ?
@@ -502,12 +641,10 @@ def profile():
     if check:
         return check
 
-    connection = sqlite3.connect("jobs.db")
-    connection.row_factory = sqlite3.Row
-
+    connection = get_connection()
     cursor = connection.cursor()
 
-    cursor.execute("""
+    db_execute(cursor, """
         SELECT *
         FROM users
         WHERE id = ?
@@ -517,11 +654,9 @@ def profile():
 
     user = cursor.fetchone()
 
-    # Prevent NoneType error
     if user is None:
 
         session.clear()
-
         connection.close()
 
         return redirect("/login")
@@ -533,7 +668,7 @@ def profile():
         location = request.form["location"]
         bio = request.form["bio"]
 
-        cursor.execute("""
+        db_execute(cursor, """
             UPDATE users
             SET full_name = ?,
                 phone = ?,
@@ -550,7 +685,7 @@ def profile():
 
         connection.commit()
 
-        cursor.execute("""
+        db_execute(cursor, """
             SELECT *
             FROM users
             WHERE id = ?
@@ -601,9 +736,7 @@ def personal_details():
     if check:
         return check
 
-    connection = sqlite3.connect("jobs.db")
-    connection.row_factory = sqlite3.Row
-
+    connection = get_connection()
     cursor = connection.cursor()
 
     if request.method == "POST":
@@ -613,7 +746,7 @@ def personal_details():
         location = request.form["location"]
         bio = request.form["bio"]
 
-        cursor.execute("""
+        db_execute(cursor, """
             UPDATE users
             SET full_name = ?,
                 phone = ?,
@@ -629,12 +762,11 @@ def personal_details():
         ))
 
         connection.commit()
-
         connection.close()
 
         return redirect("/profile")
 
-    cursor.execute("""
+    db_execute(cursor, """
         SELECT *
         FROM users
         WHERE id = ?
@@ -667,9 +799,7 @@ def qualifications():
     if check:
         return check
 
-    connection = sqlite3.connect("jobs.db")
-    connection.row_factory = sqlite3.Row
-
+    connection = get_connection()
     cursor = connection.cursor()
 
     if request.method == "POST":
@@ -680,7 +810,7 @@ def qualifications():
         graduation_year = request.form["graduation_year"]
         cgpa = request.form["cgpa"]
 
-        cursor.execute("""
+        db_execute(cursor, """
             SELECT id
             FROM qualifications
             WHERE user_id = ?
@@ -692,7 +822,7 @@ def qualifications():
 
         if existing:
 
-            cursor.execute("""
+            db_execute(cursor, """
                 UPDATE qualifications
                 SET degree = ?,
                     branch = ?,
@@ -711,7 +841,7 @@ def qualifications():
 
         else:
 
-            cursor.execute("""
+            db_execute(cursor, """
                 INSERT INTO qualifications (
                     user_id,
                     degree,
@@ -731,12 +861,11 @@ def qualifications():
             ))
 
         connection.commit()
-
         connection.close()
 
         return redirect("/profile")
 
-    cursor.execute("""
+    db_execute(cursor, """
         SELECT *
         FROM qualifications
         WHERE user_id = ?
@@ -769,9 +898,7 @@ def job_preferences():
     if check:
         return check
 
-    connection = sqlite3.connect("jobs.db")
-    connection.row_factory = sqlite3.Row
-
+    connection = get_connection()
     cursor = connection.cursor()
 
     if request.method == "POST":
@@ -782,7 +909,7 @@ def job_preferences():
         work_mode = request.form["work_mode"]
         expected_salary = request.form["expected_salary"]
 
-        cursor.execute("""
+        db_execute(cursor, """
             SELECT id
             FROM job_preferences
             WHERE user_id = ?
@@ -794,7 +921,7 @@ def job_preferences():
 
         if existing:
 
-            cursor.execute("""
+            db_execute(cursor, """
                 UPDATE job_preferences
                 SET preferred_role = ?,
                     preferred_location = ?,
@@ -813,7 +940,7 @@ def job_preferences():
 
         else:
 
-            cursor.execute("""
+            db_execute(cursor, """
                 INSERT INTO job_preferences (
                     user_id,
                     preferred_role,
@@ -833,12 +960,11 @@ def job_preferences():
             ))
 
         connection.commit()
-
         connection.close()
 
         return redirect("/profile")
 
-    cursor.execute("""
+    db_execute(cursor, """
         SELECT *
         FROM job_preferences
         WHERE user_id = ?
@@ -871,9 +997,7 @@ def profile_settings():
     if check:
         return check
 
-    connection = sqlite3.connect("jobs.db")
-    connection.row_factory = sqlite3.Row
-
+    connection = get_connection()
     cursor = connection.cursor()
 
     error = None
@@ -885,7 +1009,7 @@ def profile_settings():
 
         try:
 
-            cursor.execute("""
+            db_execute(cursor, """
                 UPDATE users
                 SET username = ?,
                     email = ?
@@ -900,11 +1024,16 @@ def profile_settings():
 
             session["username"] = username
 
-        except sqlite3.IntegrityError:
+        except (
+            sqlite3.IntegrityError,
+            psycopg.IntegrityError
+        ):
+
+            connection.rollback()
 
             error = "Username or email already exists."
 
-    cursor.execute("""
+    db_execute(cursor, """
         SELECT *
         FROM users
         WHERE id = ?
@@ -927,7 +1056,10 @@ def profile_settings():
 # CHANGE PASSWORD
 # =========================================================
 
-@app.route("/change-password", methods=["GET", "POST"])
+@app.route(
+    "/change-password",
+    methods=["GET", "POST"]
+)
 def change_password():
 
     check = login_required()
@@ -944,41 +1076,48 @@ def change_password():
         new_password = request.form["new_password"]
         confirm_password = request.form["confirm_password"]
 
-        connection = sqlite3.connect("jobs.db")
-        connection.row_factory = sqlite3.Row
+        connection = get_connection()
         cursor = connection.cursor()
 
-        cursor.execute("""
+        db_execute(cursor, """
             SELECT *
             FROM users
             WHERE id = ?
-        """, (session["user_id"],))
+        """, (
+            session["user_id"],
+        ))
 
         user = cursor.fetchone()
 
         if user is None:
+
             connection.close()
             session.clear()
+
             return redirect("/login")
 
         if not check_password_hash(
             user["password_hash"],
             current_password
         ):
+
             error = "Current password is incorrect."
 
         elif new_password != confirm_password:
+
             error = "New passwords do not match."
 
         elif len(new_password) < 6:
+
             error = "New password must be at least 6 characters."
 
         else:
+
             new_password_hash = generate_password_hash(
                 new_password
             )
 
-            cursor.execute("""
+            db_execute(cursor, """
                 UPDATE users
                 SET password_hash = ?
                 WHERE id = ?
@@ -988,6 +1127,7 @@ def change_password():
             ))
 
             connection.commit()
+
             success = "Password changed successfully."
 
         connection.close()
@@ -1037,7 +1177,10 @@ def resume():
 # UPLOAD RESUME
 # =========================================================
 
-@app.route("/upload-resume", methods=["POST"])
+@app.route(
+    "/upload-resume",
+    methods=["POST"]
+)
 def upload_resume():
 
     check = login_required()
@@ -1062,6 +1205,7 @@ def upload_resume():
         f"{original_filename}"
     )
 
+    # Delete old resume for this user
     for old_file in os.listdir("uploads"):
 
         if old_file.startswith(
@@ -1090,7 +1234,9 @@ def upload_resume():
 # VIEW RESUME
 # =========================================================
 
-@app.route("/view-resume/<filename>")
+@app.route(
+    "/view-resume/<filename>"
+)
 def view_resume(filename):
 
     check = login_required()
@@ -1101,6 +1247,7 @@ def view_resume(filename):
     if not filename.startswith(
         f"user_{session['user_id']}_"
     ):
+
         return "Access denied", 403
 
     return send_from_directory(
@@ -1113,7 +1260,10 @@ def view_resume(filename):
 # DELETE RESUME
 # =========================================================
 
-@app.route("/delete-resume", methods=["POST"])
+@app.route(
+    "/delete-resume",
+    methods=["POST"]
+)
 def delete_resume():
 
     check = login_required()

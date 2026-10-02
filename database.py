@@ -1,7 +1,95 @@
+import os
 import sqlite3
 
 
 def create_database():
+    database_url = os.getenv("DATABASE_URL")
+
+    # ==============================
+    # RENDER → POSTGRESQL
+    # ==============================
+    if database_url:
+        import psycopg2
+
+        connection = psycopg2.connect(database_url)
+        cursor = connection.cursor()
+
+        # ---------------- USERS ----------------
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS users (
+                id SERIAL PRIMARY KEY,
+                username TEXT UNIQUE NOT NULL,
+                email TEXT UNIQUE NOT NULL,
+                password_hash TEXT NOT NULL,
+                full_name TEXT,
+                phone TEXT,
+                location TEXT,
+                bio TEXT,
+                profile_picture TEXT
+            )
+        """)
+
+        # ---------------- JOBS ----------------
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS jobs (
+                id SERIAL PRIMARY KEY,
+                company TEXT NOT NULL,
+                role TEXT NOT NULL,
+                location TEXT,
+                link TEXT,
+                status TEXT DEFAULT 'Pending',
+                user_id INTEGER
+            )
+        """)
+
+        # ---------------- INTERNSHIPS ----------------
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS internships (
+                id SERIAL PRIMARY KEY,
+                company TEXT NOT NULL,
+                role TEXT NOT NULL,
+                location TEXT,
+                link TEXT,
+                status TEXT DEFAULT 'Pending',
+                user_id INTEGER
+            )
+        """)
+
+        # ---------------- QUALIFICATIONS ----------------
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS qualifications (
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER UNIQUE NOT NULL,
+                degree TEXT,
+                branch TEXT,
+                college TEXT,
+                graduation_year TEXT,
+                cgpa TEXT
+            )
+        """)
+
+        # ---------------- JOB PREFERENCES ----------------
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS job_preferences (
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER UNIQUE NOT NULL,
+                preferred_role TEXT,
+                preferred_location TEXT,
+                employment_type TEXT,
+                work_mode TEXT,
+                expected_salary TEXT
+            )
+        """)
+
+        connection.commit()
+        cursor.close()
+        connection.close()
+
+        return
+
+    # ==============================
+    # LOCAL → SQLITE
+    # ==============================
     connection = sqlite3.connect("jobs.db")
     cursor = connection.cursor()
 
