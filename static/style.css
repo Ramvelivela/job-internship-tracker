@@ -1213,3 +1213,86 @@ body.dark-mode .resume-box {
     }
 
 }
+
+/* Mobile Dashboard */
+@media (max-width: 600px) {
+
+    .container {
+        width: 94%;
+        margin: 20px auto;
+    }
+
+    h1 {
+        font-size: 26px;
+        text-align: center;
+    }
+
+    .subtitle {
+        font-size: 13px;
+        text-align: center;
+    }
+
+    .profile-btn {
+        padding: 8px 12px;
+        font-size: 13px;
+    }
+
+    .stats {
+        padding: 18px 12px;
+        margin: 18px 0;
+    }
+
+    .stats h2 {
+        font-size: 28px;
+    }
+
+    .action-buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        width: 100%;
+    }
+
+    .action-buttons a,
+    .action-buttons button {
+        width: 100%;
+        box-sizing: border-box;
+        text-align: center;
+    }
+
+    .section-header {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+
+    .section-header input {
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .section-header select {
+        width: 100%;
+    }
+
+    .job-card,
+    .internship-card {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 16px;
+    }
+
+    .card-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .card-actions a,
+    .card-actions button {
+        width: 100%;
+        box-sizing: border-box;
+        text-align: center;
+    }
+}
