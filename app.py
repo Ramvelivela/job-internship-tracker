@@ -35,10 +35,10 @@ def get_connection():
 
     # Render / PostgreSQL
     if database_url:
-        return psycopg.connect(
-            database_url,
-            cursor_factory=dict_row
-        )
+        connection = psycopg.coonect(database_url)
+        connection.row_factory = dict_row
+        return connection
+        
 
     # Local / SQLite
     connection = sqlite3.connect("jobs.db")
