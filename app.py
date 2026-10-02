@@ -37,7 +37,7 @@ def get_connection():
     if database_url:
         return psycopg.connect(
             database_url,
-            cursor_factory=RealDictCursor
+            cursor_factory=dict_row
         )
 
     # Local / SQLite
