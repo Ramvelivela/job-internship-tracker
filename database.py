@@ -9,9 +9,9 @@ def create_database():
     # RENDER → POSTGRESQL
     # ==============================
     if database_url:
-        import psycopg2
+        import psycopg
 
-        connection = psycopg2.connect(database_url)
+        connection = psycopg.connect(database_url)
         cursor = connection.cursor()
 
         # ---------------- USERS ----------------
