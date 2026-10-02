@@ -35,8 +35,10 @@ def get_connection():
 
     # Render / PostgreSQL
     if database_url:
-        connection = psycopg.conect(database_url)
-        connection.row_factory = dict_row
+        connection = psycopg.conect(
+            database_url,
+            row_factory = dict_row
+        )
         return connection
         
 
