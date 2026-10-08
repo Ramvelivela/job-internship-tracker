@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+    <title>Internship Details</title>
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+
+</head>
+
+<body>
+
+    <div class="container">
+
+        <div class="hero">
+
+            <h1>
+                {{ internship["company"] }}
+            </h1>
+
+            <p>
+                {{ internship["role"] }}
+            </p>
+
+        </div>
+
+
+        <div class="resume-box">
+
+            <h2>
+                Application Details
+            </h2>
+
+
+            <p>
+                <strong>Company:</strong>
+                {{ internship["company"] }}
+            </p>
+
+
+            <p>
+                <strong>Role:</strong>
+                {{ internship["role"] }}
+            </p>
+
+
+            <p>
+                <strong>Location:</strong>
+                {{ internship["location"] or "Not provided" }}
+            </p>
+
+
+            <p>
+                <strong>Status:</strong>
+                {{ internship["status"] }}
+            </p>
+
+
+            {% if internship["application_date"] %}
+
+                <p>
+                    <strong>Application Date:</strong>
+                    {{ internship["application_date"] }}
+                </p>
+
+            {% endif %}
+
+
+            {% if internship["deadline"] %}
+
+                <p>
+                    <strong>Deadline:</strong>
+                    {{ internship["deadline"] }}
+
+                    {% if internship["deadline_status"] == "overdue" %}
+                        🔴 Overdue
+                    {% elif internship["deadline_status"] == "soon" %}
+                        🟠 Due Soon
+                    {% else %}
+                        🟢 Upcoming
+                    {% endif %}
+                </p>
+
+            {% endif %}
+
+
+            {% if internship["interview_date"] %}
+
+                <p>
+                    <strong>Interview Date:</strong>
+                    {{ internship["interview_date"] }}
+
+                    {% if internship["interview_status"] == "overdue" %}
+                        🔴 Passed
+                    {% elif internship["interview_status"] == "soon" %}
+                        🟠 Coming Soon
+                    {% else %}
+                        🟢 Upcoming
+                    {% endif %}
+                </p>
+
+            {% endif %}
+
+
+            {% if internship["follow_up_date"] %}
+
+                <p>
+                    <strong>Follow-up Date:</strong>
+                    {{ internship["follow_up_date"] }}
+
+                    {% if internship["follow_up_status"] == "overdue" %}
+                        🔴 Follow-up Due
+                    {% elif internship["follow_up_status"] == "soon" %}
+                        🟠 Follow-up Soon
+                    {% else %}
+                        🟢 Upcoming
+                    {% endif %}
+                </p>
+
+            {% endif %}
+
+
+            {% if internship["notes"] %}
+
+                <p>
+                    <strong>Notes:</strong><br>
+                    {{ internship["notes"] }}
+                </p>
+
+            {% endif %}
+
+
+            {% if internship["link"] %}
+
+                <p>
+
+                    <a
+                        class="apply-link"
+                        href="{{ internship['link'] }}"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        Apply Now →
+                    </a>
+
+                </p>
+
+            {% endif %}
+
+
+            <div class="action-buttons">
+
+                <a
+                    href="/edit-internship/{{ internship['id'] }}"
+                    class="primary-btn"
+                >
+                    Edit Application
+                </a>
+
+                <a
+                    href="/"
+                    class="primary-btn"
+                >
+                    ← Back to Dashboard
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+        if (localStorage.getItem("theme") === "dark") {
+            document.body.classList.add("dark-mode");
+        }
+    </script>
+
+</body>
+</html>

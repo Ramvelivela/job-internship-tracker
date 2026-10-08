@@ -3,6 +3,8 @@
 <head>
     <title>Job & Internship Tracker</title>
 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <link
         rel="stylesheet"
         href="{{ url_for('static', filename='style.css') }}"
@@ -11,14 +13,67 @@
 
     <div class="container">
 
+        <!-- ================= NOTIFICATIONS ================= -->
+
         <!-- Header -->
         <header class="hero">
 
             <h1>Job & Internship Tracker</h1>
 
+            <button
+                type="button"
+                class="notification-btn"
+                onclick="toggleNotifications()"
+            >
+                🔔
+                {% if overdue_count + upcoming_deadlines + upcoming_interviews + follow_ups > 0 %}
+                    <span class="notification-count">
+                        {{ overdue_count + upcoming_deadlines + upcoming_interviews + follow_ups }}
+                    </span>
+                {% endif %}
+            </button>
+
+            <span class="header-divider"></span>
+
             <a href="/profile" class="profile-btn">
-                👤 Profile
+                👤
             </a>
+
+            <div id="notificationPanel" class="notification-panel">
+
+                <div class="notification-panel-header">
+                    <strong>🔔 Notifications</strong>
+                </div>
+
+                <button
+                    type="button"
+                    class="mark-read-btn"
+                    onclick="markNotificationsRead()"
+                >
+                    Mark all as read
+                </button>
+
+                <div class="notification-item">
+                    <strong>🔴 {{ overdue_count }} Overdue</strong>
+                    <span>Applications need attention</span>
+                </div>
+
+                <div class="notification-item">
+                    <strong>🟠 {{ upcoming_deadlines }} Deadlines Soon</strong>
+                    <span>Deadlines approaching</span>
+                </div>
+
+                <div class="notification-item">
+                    <strong>🟡 {{ upcoming_interviews }} Interviews Soon</strong>
+                    <span>Upcoming interviews</span>
+                </div>
+
+                <div class="notification-item">
+                    <strong>🔵 {{ follow_ups }} Follow-ups</strong>
+                    <span>Follow-up required</span>
+                </div>
+
+            </div>
 
             <p>
                 Organize your career opportunities in one place.
@@ -31,13 +86,12 @@
         <section class="stats-container">
 
             <div class="stat-box">
-
                 <strong>
                     {{ jobs|length + internships|length }}
                 </strong>
 
                 <span class="stat-label">
-                    Saved Opportunities
+                    Total Applications
                 </span>
 
                 <small>
@@ -45,11 +99,69 @@
                     &nbsp; | &nbsp;
                     🎓 Internships: {{ internships|length }}
                 </small>
+            </div>
 
+            <div class="stat-box">
+                <strong>
+                    {{ jobs|selectattr("status", "equalto", "Applied")|list|length
+                + internships|selectattr("status", "equalto", "Applied")|list|length }}
+                </strong>
+
+                <span class="stat-label">
+                    Applied
+                </span>
+
+                <small>
+                    Applications submitted
+                </small>
+            </div>
+
+            <div class="stat-box">
+                <strong>
+                    {{ jobs|selectattr("status", "equalto", "Interview")|list|length
+                + internships|selectattr("status", "equalto", "Interview")|list|length }}
+                </strong>
+
+                <span class="stat-label">
+                    Interviews
+                </span>
+
+                <small>
+                    Interview stage
+                </small>
+            </div>
+
+            <div class="stat-box">
+                <strong>
+                    {{ jobs|selectattr("status", "equalto", "Selected")|list|length
+                + internships|selectattr("status", "equalto", "Selected")|list|length }}
+                </strong>
+
+                <span class="stat-label">
+                    Selected
+                </span>
+
+                <small>
+                    Successful applications
+                </small>
+            </div>
+
+            <div class="stat-box">
+                <strong>
+                    {{ jobs|selectattr("status", "equalto", "Rejected")|list|length
+                + internships|selectattr("status", "equalto", "Rejected")|list|length }}
+                </strong>
+
+                <span class="stat-label">
+                    Rejected
+                </span>
+
+                <small>
+                    Unsuccessful applications
+                </small>
             </div>
 
         </section>
-
 
         <!-- Add Buttons -->
         <div class="action-buttons">
@@ -68,7 +180,6 @@
             </a>
 
         </div>
-
 
 
         <!-- ================= SAVED JOBS ================= -->
@@ -107,8 +218,12 @@
                         All Status
                     </option>
 
-                    <option value="Pending">
-                        Pending
+                    <option value="Saved">
+                        Saved
+                    </option>
+
+                    <option value="Assessment">
+                        Assessment
                     </option>
 
                     <option value="Applied">
@@ -125,6 +240,29 @@
 
                     <option value="Rejected">
                         Rejected
+                    </option>
+
+                </select>
+
+                <select
+                    id="jobDateFilter"
+                    onchange="filterJobsByDate()"
+                >
+
+                    <option value="All">
+                        All Dates
+                    </option>
+
+                    <option value="Deadline">
+                        Deadline Soon
+                    </option>
+
+                    <option value="Interview">
+                        Interview Soon
+                    </option>
+
+                    <option value="FollowUp">
+                        Follow-up Due
                     </option>
 
                 </select>
@@ -164,6 +302,65 @@
                                     {{ job["status"] }}
                                 </p>
 
+                                {% if job["application_date"] %}
+                                    <p>
+                                        <span>Application Date</span>
+                                        {{ job["application_date"] }}
+                                    </p>
+                                {% endif %}
+
+                                {% if job["deadline"] %}
+                                    <p class="deadline-info">
+                                        <span>Deadline</span>
+                                        {{ job["deadline"] }}
+
+                                        {% if job["deadline_status"] == "overdue" %}
+                                            <strong>🔴 Overdue</strong>
+                                        {% elif job["deadline_status"] == "soon" %}
+                                            <strong>🟠 Due Soon</strong>
+                                        {% else %}
+                                            <strong>🟢 Upcoming</strong>
+                                        {% endif %}
+                                    </p>
+                                {% endif %}
+
+                                {% if job["interview_date"] %}
+                                    <p class="interview-info">
+                                        <span>Interview</span>
+                                        {{ job["interview_date"] }}
+
+                                        {% if job["interview_status"] == "overdue" %}
+                                            <strong>🔴 Passed</strong>
+                                        {% elif job["interview_status"] == "soon" %}
+                                            <strong>🟠 Coming Soon</strong>
+                                        {% else %}
+                                            <strong>🟢 Upcoming</strong>
+                                        {% endif %}
+                                    </p>
+                                {% endif %}
+
+                                {% if job["follow_up_date"] %}
+                                    <p class="follow-up-info">
+                                        <span>Follow-up</span>
+                                        {{ job["follow_up_date"] }}
+
+                                        {% if job["follow_up_status"] == "overdue" %}
+                                            <strong>🔴 Follow-up Due</strong>
+                                        {% elif job["follow_up_status"] == "soon" %}
+                                            <strong>🟠 Follow-up Soon</strong>
+                                        {% else %}
+                                            <strong>🟢 Upcoming</strong>
+                                        {% endif %}
+                                    </p>
+                                {% endif %}
+
+                                {% if job["notes"] %}
+                                    <p class="notes-info">
+                                        <span>Notes</span>
+                                        {{ job["notes"] }}
+                                    </p>
+                                {% endif %}
+
 
                                 {% if job["link"] %}
 
@@ -189,6 +386,12 @@
 
                             <!-- Job Buttons -->
                             <div class="card-actions">
+                                
+                                <a href="/job/{{ job['id'] }}">
+                                    <button class="details-btn">
+                                        View Details
+                                    </button>
+                                </a>
 
                                 <a
                                     href="/edit-job/{{ job['id'] }}"
@@ -267,12 +470,16 @@
                         All Status
                     </option>
 
-                    <option value="Pending">
-                        Pending
+                    <option value="Saved">
+                        Saved
                     </option>
 
                     <option value="Applied">
                         Applied
+                    </option>
+
+                    <option value="Assessment">
+                        Assessment
                     </option>
 
                     <option value="Interview">
@@ -285,6 +492,29 @@
 
                     <option value="Rejected">
                         Rejected
+                    </option>
+
+                </select>
+
+                <select
+                    id="internshipDateFilter"
+                    onchange="filterInternshipsByDate()"
+                >
+
+                    <option value="All">
+                        All Dates
+                    </option>
+
+                    <option value="Deadline">
+                        Deadline Soon
+                    </option>
+
+                    <option value="Interview">
+                        Interview Soon
+                    </option>
+
+                    <option value="FollowUp">
+                        Follow-up Due
                     </option>
 
                 </select>
@@ -324,6 +554,65 @@
                                     {{ internship["status"] }}
                                 </p>
 
+                                {% if internship["application_date"] %}
+                                    <p>
+                                        <span>Application Date</span>
+                                        {{ internship["application_date"] }}
+                                    </p>
+                                {% endif %}
+
+                                {% if internship["deadline"] %}
+                                    <p class="deadline-info">
+                                        <span>Deadline</span>
+                                        {{ internship["deadline"] }}
+
+                                        {% if internship["deadline_status"] == "overdue" %}
+                                            <strong>🔴 Overdue</strong>
+                                        {% elif internship["deadline_status"] == "soon" %}
+                                            <strong>🟠 Due Soon</strong>
+                                        {% else %}
+                                            <strong>🟢 Upcoming</strong>
+                                        {% endif %}
+                                    </p>
+                                {% endif %}
+
+                                {% if internship["interview_date"] %}
+                                    <p class="interview-info">
+                                        <span>Interview</span>
+                                        {{ internship["interview_date"] }}
+
+                                        {% if internship["interview_status"] == "overdue" %}
+                                            <strong>🔴 Passed</strong>
+                                        {% elif internship["interview_status"] == "soon" %}
+                                            <strong>🟠 Coming Soon</strong>
+                                        {% else %}
+                                            <strong>🟢 Upcoming</strong>
+                                        {% endif %}
+                                    </p>
+                                {% endif %}
+
+                                {% if internship["follow_up_date"] %}
+                                    <p class="follow-up-info">
+                                        <span>Follow-up</span>
+                                        {{ internship["follow_up_date"] }}
+
+                                        {% if internship["follow_up_status"] == "overdue" %}
+                                            <strong>🔴 Follow-up Due</strong>
+                                        {% elif internship["follow_up_status"] == "soon" %}
+                                            <strong>🟠 Follow-up Soon</strong>
+                                        {% else %}
+                                            <strong>🟢 Upcoming</strong>
+                                        {% endif %}
+                                    </p>
+                                {% endif %}
+
+                                {% if internship["notes"] %}
+                                    <p class="notes-info">
+                                        <span>Notes</span>
+                                        {{ internship["notes"] }}
+                                    </p>
+                                {% endif %}
+
 
                                 {% if internship["link"] %}
 
@@ -349,6 +638,12 @@
 
                             <!-- Internship Buttons -->
                             <div class="card-actions">
+
+                                <a href="/internship/{{ internship['id'] }}">
+                                    <button class="details-btn">
+                                        View Details
+                                    </button>
+                                </a>
 
                                 <a
                                     href="/edit-internship/{{ internship['id'] }}"
@@ -517,6 +812,76 @@
 
         }
 
+        /* ---------- Job Date Filter ---------- */
+
+        function filterJobsByDate() {
+
+            let filter =
+                document.getElementById(
+                    "jobDateFilter"
+                ).value;
+
+            let jobs =
+                document.querySelectorAll(".job-card");
+
+
+            jobs.forEach(function(job) {
+
+                if (filter === "All") {
+
+                    job.style.display = "";
+
+                    return;
+                }
+
+
+                let show = false;
+
+
+                if (
+                    filter === "Deadline" &&
+                    job.querySelector(".deadline-info")
+                ) {
+
+                    show = true;
+
+                }
+
+
+                if (
+                    filter === "Interview" &&
+                    job.querySelector(".interview-info")
+                ) {
+
+                    show = true;
+
+                }
+
+
+                if (
+                    filter === "FollowUp" &&
+                    job.querySelector(".follow-up-info")
+                ) {
+
+                    show = true;
+
+                }
+
+
+                if (show) {
+
+                    job.style.display = "";
+
+                } else {
+
+                    job.style.display = "none";
+
+                }
+
+            });
+
+        }
+
 
 
         /* ---------- Internship Search ---------- */
@@ -597,8 +962,7 @@
             });
 
         }
-
-
+    
 
         /* ---------- Dark Mode ---------- */
 
@@ -676,7 +1040,122 @@
 
         }
 
+        function toggleNotifications() {
+
+            const panel =
+                document.getElementById("notificationPanel");
+
+            if (panel.style.display === "block") {
+
+                panel.style.display = "none";
+
+            } else {
+
+                panel.style.display = "block";
+
+            }
+
+        }
+
+        function markNotificationsRead() {
+
+            localStorage.setItem(
+                "notificationsRead",
+                "true"
+            );
+
+            document.querySelector(
+                ".notification-count"
+            )?.remove();
+
+            const panel =
+                document.getElementById("notificationPanel");
+
+            if (panel) {
+                panel.style.display = "none";
+            }
+
+        }
+
+        /* ---------- Internship Date Filter ---------- */
+
+        function filterInternshipsByDate() {
+
+            let filter =
+                document.getElementById(
+                    "internshipDateFilter"
+                ).value;
+
+            let internships =
+                document.querySelectorAll(
+                    ".internship-card"
+                );
+
+
+            internships.forEach(function(internship) {
+
+                if (filter === "All") {
+
+                    internship.style.display = "";
+
+                    return;
+                }
+
+
+                let show = false;
+
+
+                if (
+                    filter === "Deadline" &&
+                    internship.querySelector(".deadline-info")
+                ) {
+
+                    show = true;
+
+                }
+
+
+                if (
+                    filter === "Interview" &&
+                    internship.querySelector(".interview-info")
+                ) {
+
+                    show = true;
+
+                }
+
+
+                if (
+                    filter === "FollowUp" &&
+                    internship.querySelector(".follow-up-info")
+                ) {
+
+                    show = true;
+
+                }
+
+
+                if (show) {
+
+                    internship.style.display = "";
+
+                } else {
+
+                    internship.style.display = "none";
+
+                }
+
+            });
+
+        }
+
     </script>
+    <script>
+        if (localStorage.getItem("theme") === "dark") {
+            document.body.classList.add("dark-mode");
+        }
+    </script>
+
 
 </body>
 </html>

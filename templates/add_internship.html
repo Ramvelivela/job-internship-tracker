@@ -60,12 +60,49 @@
                     <label>Application Status</label>
 
                     <select name="status">
-                        <option value="Pending">Pending</option>
+
+                        <option value="Saved">Saved</option>
+
                         <option value="Applied">Applied</option>
+
+                        <option value="Assessment">Assessment</option>
+
                         <option value="Interview">Interview</option>
+
                         <option value="Selected">Selected</option>
+
                         <option value="Rejected">Rejected</option>
+
                     </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Application Date</label>
+                    <input type="date" name="application_date">
+                </div>
+
+                <div class="form-group">
+                    <label>Application Deadline</label>
+                    <input type="date" name="deadline">
+                </div>
+
+                <div class="form-group">
+                    <label>Interview Date</label>
+                    <input type="date" name="interview_date">
+                </div>
+
+                <div class="form-group">
+                    <label>Follow-up Date</label>
+                    <input type="date" name="follow_up_date">
+                </div>
+
+                <div class="form-group">
+                    <label>Notes</label>
+                    <textarea
+                        name="notes"
+                        rows="4"
+                        placeholder="Add notes about this internship..."
+                    ></textarea>
                 </div>
 
                 <div class="form-actions">
@@ -85,6 +122,12 @@
         </div>
 
     </div>
+
+    <script>
+        if (localStorage.getItem("theme") === "dark") {
+            document.body.classList.add("dark-mode");
+        }
+    </script>
 
 </body>
 </html>

@@ -103,7 +103,57 @@
                     placeholder="e.g. 8.54"
                 >
             </div>
+            <!-- Intermediate / 12th -->
 
+            <h3>📚 Intermediate / 12th</h3>
+
+            <div class="profile-field">
+                <label>College / Institution</label>
+
+                <input
+                    type="text"
+                    name="intermediate_college"
+                    value="{{ qualification['intermediate_college'] if qualification else '' }}"
+                    placeholder="Enter Intermediate college"
+                >
+            </div>
+
+            <div class="profile-field">
+                <label>Percentage</label>
+
+                <input
+                    type="text"
+                    name="intermediate_percentage"
+                    value="{{ qualification['intermediate_percentage'] if qualification else '' }}"
+                    placeholder="e.g. 85%"
+                >
+            </div>
+
+            <!-- 10th / SSC -->
+
+            <h3>🏫 10th / SSC</h3>
+
+            <div class="profile-field">
+                <label>School</label>
+
+                <input
+                    type="text"
+                    name="ssc_school"
+                    value="{{ qualification['ssc_school'] if qualification else '' }}"
+                    placeholder="Enter school name"
+                >
+            </div>
+
+            <div class="profile-field">
+                <label>Percentage</label>
+
+                <input
+                    type="text"
+                    name="ssc_percentage"
+                    value="{{ qualification['ssc_percentage'] if qualification else '' }}"
+                    placeholder="e.g. 90%"
+                >
+            </div>
 
             <div class="form-actions">
 

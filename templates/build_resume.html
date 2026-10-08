@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Build Resume - Job & Internship Tracker</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+
+</head>
+
+
+<body>
+
+<div class="profile-page">
+
+    <div class="profile-topbar">
+
+        <a href="/resume" class="profile-back">
+            ←
+        </a>
+
+        <h1>Build Resume</h1>
+
+        <button
+            type="button"
+            onclick="toggleTheme()"
+            class="theme-icon"
+        >
+            🎨
+        </button>
+
+    </div>
+
+
+    <section class="profile-section build-resume-section">
+
+        <form action="/build-resume" method="POST">
+
+        <h2>📝 Build Your Resume</h2>
+
+        <p>
+            Create a professional resume using your profile information.
+        </p>
+
+
+        <!-- Personal Information -->
+
+        <h3>👤 Personal Information</h3>
+
+        <div class="profile-field">
+
+            <label>Full Name</label>
+
+            <input
+                type="text"
+                name="full_name"
+                value="{{ user['full_name'] or '' }}"
+                placeholder="Full Name"
+            >
+
+        </div>
+
+
+        <div class="profile-field">
+
+            <label>Email</label>
+
+            <input
+                type="email"
+                name="email"
+                value="{{ user['email'] or '' }}"
+                placeholder="Email"
+            >
+
+        </div>
+
+
+        <div class="profile-field">
+
+            <label>Phone</label>
+
+            <input
+                type="tel"
+                name="phone"
+                value="{{ user['phone'] or '' }}"
+                placeholder="Phone"
+            >
+
+        </div>
+
+
+        <div class="profile-field">
+
+            <label>Location</label>
+
+            <input
+                type="text"
+                name="location"
+                value="{{ user['location'] or '' }}"
+                placeholder="Location"
+            >
+
+        </div>
+
+
+        <!-- Professional Summary -->
+
+        <h3>🎯 Professional Summary</h3>
+
+        <div class="profile-field">
+
+            <textarea
+                name="summary"
+                rows="5"
+                placeholder="Write a short professional summary..."
+            >{{ user['bio'] or '' }}</textarea>
+
+        </div>
+
+
+        <!-- Education -->
+
+        <h3>🎓 Education</h3>
+
+        {% if qualification %}
+
+            <div class="profile-field">
+
+                <label>Degree</label>
+
+                <input
+                    type="text"
+                    value="{{ qualification['degree'] }}"
+                    readonly
+                >
+
+            </div>
+
+
+            <div class="profile-field">
+
+                <label>Branch / Specialization</label>
+
+                <input
+                    type="text"
+                    value="{{ qualification['branch'] }}"
+                    readonly
+                >
+
+            </div>
+
+
+            <div class="profile-field">
+
+                <label>College / University</label>
+
+                <input
+                    type="text"
+                    value="{{ qualification['college'] }}"
+                    readonly
+                >
+
+            </div>
+
+
+            <div class="profile-field">
+
+                <label>Graduation Year</label>
+
+                <input
+                    type="text"
+                    value="{{ qualification['graduation_year'] or '' }}"
+                    readonly
+                >
+
+            </div>
+
+
+            <div class="profile-field">
+
+                <label>CGPA</label>
+
+                <input
+                    type="text"
+                    value="{{ qualification['cgpa'] or '' }}"
+                    readonly
+                >
+
+            </div>
+
+        {% else %}
+
+            <p class="no-resume">
+                No qualification details found.
+                Please update your Qualifications first.
+            </p>
+
+        {% endif %}
+
+
+        <!-- Skills -->
+
+        <h3>💻 Skills</h3>
+
+        <div class="profile-field">
+
+            <textarea
+                name="skills"
+                rows="4"
+                placeholder="Example: Python, HTML, CSS, SQL, Flask..."
+            >{{ saved_resume['skills'] if saved_resume else '' }}</textarea>
+
+        </div>
+
+
+        <!-- Projects -->
+
+        <h3>🚀 Projects</h3>
+
+        <div class="profile-field">
+
+            <textarea
+                name="projects"
+                rows="5"
+                placeholder="Enter your projects and briefly describe them..."
+            >{{ saved_resume['projects'] if saved_resume else '' }}</textarea>
+
+        </div>
+
+
+        <!-- Certifications -->
+
+        <h3>🏆 Certifications</h3>
+
+        <div class="profile-field">
+
+        <textarea
+            name="certifications"
+            rows="4"
+            placeholder="Enter your certifications..."
+        >{{ saved_resume['certifications'] if saved_resume else '' }}</textarea>
+
+        </div>
+
+
+        <!-- Achievements -->
+
+        <h3>🏅 Achievements / Competitions</h3>
+
+        <div class="profile-field">
+
+            <textarea
+                name="achievements"
+                rows="4"
+                placeholder="Enter your achievements or competitions..."
+            >{{ saved_resume['achievements'] if saved_resume else '' }}</textarea>
+
+        </div>
+
+
+        <div class="form-actions">
+
+            <button
+                type="submit"
+                class="save-profile-btn"
+            >
+                Generate Resume
+            </button>
+
+            <a
+                href="/resume"
+                class="back-btn"
+            >
+                Cancel
+            </a>
+
+        </div>
+
+        </form>
+        
+    </section>
+
+</div>
+
+
+<script>
+
+function toggleTheme() {
+
+    document.body.classList.toggle("dark-mode");
+
+    if (document.body.classList.contains("dark-mode")) {
+
+        localStorage.setItem("theme", "dark");
+
+    } else {
+
+        localStorage.setItem("theme", "light");
+
+    }
+
+}
+
+
+if (localStorage.getItem("theme") === "dark") {
+
+    document.body.classList.add("dark-mode");
+
+}
+
+</script>
+
+
+</body>
+
+</html>

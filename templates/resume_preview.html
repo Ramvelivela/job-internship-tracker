@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Resume Preview</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+</head>
+
+<body>
+
+<div class="profile-page">
+
+    <div class="profile-topbar">
+
+        <a href="/build-resume" class="profile-back">
+            ←
+        </a>
+
+        <h1>Resume Preview</h1>
+
+        <button
+            type="button"
+            onclick="toggleTheme()"
+            class="theme-icon"
+        >
+            🎨
+        </button>
+
+    </div>
+
+    <section class="profile-section">
+
+    <div class="resume-preview">
+
+        <div class="resume-preview-header">
+            <h1>{{ resume.full_name }}</h1>
+
+            <p>
+                {{ resume.email }}
+                {% if resume.phone %} | {{ resume.phone }}{% endif %}
+                {% if resume.location %} | {{ resume.location }}{% endif %}
+            </p>
+        </div>
+
+        {% if resume.summary %}
+        <div class="resume-preview-section">
+            <h2>Professional Summary</h2>
+            <p>{{ resume.summary }}</p>
+        </div>
+        {% endif %}
+
+        {% if qualification %}
+        <div class="resume-preview-section">
+            <h2>Education</h2>
+
+            <p>
+                <strong>
+                    {{ qualification.degree }}
+                    {% if qualification.branch %}
+                    - {{ qualification.branch }}
+                    {% endif %}
+                </strong>
+            </p>
+
+            <p>{{ qualification.college }}</p>
+
+            {% if qualification.graduation_year %}
+            <p>Graduation Year: {{ qualification.graduation_year }}</p>
+            {% endif %}
+
+            {% if qualification.cgpa %}
+            <p>CGPA: {{ qualification.cgpa }}</p>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {% if resume.skills %}
+        <div class="resume-preview-section">
+            <h2>Skills</h2>
+            <p>{{ resume.skills }}</p>
+        </div>
+        {% endif %}
+
+        {% if resume.projects %}
+        <div class="resume-preview-section">
+            <h2>Projects</h2>
+            <p>{{ resume.projects }}</p>
+        </div>
+        {% endif %}
+
+        {% if resume.certifications %}
+        <div class="resume-preview-section">
+            <h2>Certifications</h2>
+            <p>{{ resume.certifications }}</p>
+        </div>
+        {% endif %}
+
+        {% if resume.achievements %}
+        <div class="resume-preview-section">
+            <h2>Achievements / Competitions</h2>
+            <p>{{ resume.achievements }}</p>
+        </div>
+        {% endif %}
+
+        <div class="resume-preview-actions">
+
+            <a href="/download-resume" class="save-profile-btn">
+                📄 Download PDF
+            </a>
+
+            <a href="/build-resume" class="back-btn">
+                ← Edit Resume
+            </a>
+
+        </div>
+    </div>
+
+</section>
+
+</div>
+
+<script>
+function toggleTheme() {
+    document.body.classList.toggle("dark-mode");
+
+    if (document.body.classList.contains("dark-mode")) {
+        localStorage.setItem("theme", "dark");
+    } else {
+        localStorage.setItem("theme", "light");
+    }
+}
+
+if (localStorage.getItem("theme") === "dark") {
+    document.body.classList.add("dark-mode");
+}
+</script>
+
+</body>
+
+</html>

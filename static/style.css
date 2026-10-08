@@ -806,21 +806,37 @@ body.dark-mode .resume-box {
 /* ---------- Profile Button ---------- */
 
 .profile-btn {
-    position: absolute;
+    position: fixed;
     top: 20px;
-    right: 20px;
-    padding: 9px 16px;
+    right: 94px;
+    width: 44px;
+    height: 44px;
+    padding: 0;
     border: 1px solid #d8dee9;
-    border-radius: 8px;
+    border-radius: 50%;
     background: white;
     color: #344054;
     text-decoration: none;
-    font-size: 14px;
+    font-size: 20px;
     font-weight: 600;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .profile-btn:hover {
     background: #f5f7fb;
+}
+
+body.dark-mode .profile-btn {
+    background: #1f2937;
+    color: #f9fafb;
+    border-color: #4b5563;
+}
+
+body.dark-mode .profile-btn:hover {
+    background: #374151;
 }
 
 /* =====================================================
@@ -1097,8 +1113,7 @@ body.dark-mode .resume-box {
 
 /* ---------- Mobile ---------- */
 
-@media (max-width: 600px) {
-
+@media (max-width: 600px){
     .profile-page {
         width: 94%;
         margin: 20px auto;
@@ -1137,81 +1152,220 @@ body.dark-mode .resume-box {
    PROFILE EXTRA PAGES
    ========================================================= */
 
-.profile-field select {
-    width: 100%;
-    box-sizing: border-box;
-    padding: 12px 14px;
-    border: 1px solid #d0d5dd;
-    border-radius: 9px;
-    font-size: 14px;
-    font-family: inherit;
-    background: white;
-    color: #344054;
-    outline: none;
-}
-
-.profile-field select:focus {
-    border-color: #1677b7;
-    box-shadow: 0 0 0 3px rgba(22, 119, 183, 0.1);
-}
-
-.form-actions {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-top: 8px;
-}
-
-.back-btn {
-    display: inline-block;
-    padding: 11px 20px;
-    border: 1px solid #d0d5dd;
-    border-radius: 9px;
-    background: white;
-    color: #344054;
-    text-decoration: none;
-    font-size: 14px;
-    font-weight: 600;
-}
-
-.back-btn:hover {
-    background: #f5f7fb;
-}
-
-.profile-error {
-    padding: 12px 15px;
-    margin-bottom: 18px;
-    border-radius: 9px;
-    background: #fff1f2;
-    border: 1px solid #fecdd3;
-    color: #be123c;
-    font-size: 14px;
-}
-
-.profile-success {
-    padding: 12px 15px;
-    margin-bottom: 18px;
-    border-radius: 9px;
-    background: #ecfdf3;
-    border: 1px solid #abefc6;
-    color: #067647;
-    font-size: 14px;
-}
 
 @media (max-width: 600px) {
 
-    .form-actions {
+    /* Main container */
+    .container {
+        width: 94%;
+        max-width: none;
+        margin: 0 auto;
+        padding: 24px 0 40px;
+    }
+
+    /* Header */
+    .hero {
+        position: relative;
+        margin-bottom: 28px;
+        padding-top: 45px;
+    }
+
+    .hero h1 {
+        font-size: 27px;
+        line-height: 1.25;
+        margin-bottom: 10px;
+    }
+
+    .hero p {
+        font-size: 14px;
+        line-height: 1.5;
+        margin: 8px auto 0;
+        max-width: 320px;
+    }
+
+    /* Profile button */
+    .profile-btn {
+        top: 0;
+        right: 0;
+        padding: 8px 12px;
+        font-size: 13px;
+    }
+
+    /* Statistics */
+    .stats-container {
+        display: block;
+        width: 100%;
+        margin-bottom: 24px;
+    }
+
+    .stats-container .stat-box {
+        width: 100%;
+        max-width: none;
+        padding: 20px 15px;
+        border-radius: 14px;
+    }
+
+    .stat-box strong {
+        font-size: 30px;
+    }
+
+    .stat-label {
+        font-size: 15px;
+    }
+
+    .stat-box small {
+        font-size: 13px;
+        line-height: 1.5;
+    }
+
+    /* Add buttons */
+    .action-buttons {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        gap: 10px;
+        margin: 24px 0 40px;
+    }
+
+    .action-buttons a {
+        width: 100%;
+    }
+
+    .action-buttons .primary-btn {
+        width: 100%;
+        padding: 13px 16px;
+        font-size: 14px;
+    }
+
+    /* Sections */
+    .section {
+        margin-bottom: 40px;
+    }
+
+    .section-header {
+        display: flex;
         flex-direction: column;
         align-items: stretch;
+        gap: 12px;
+        margin-bottom: 18px;
     }
 
-    .save-profile-btn,
-    .back-btn {
+    .section-header h2 {
+        font-size: 21px;
+        line-height: 1.3;
+    }
+
+    .section-header p {
+        font-size: 13px;
+        line-height: 1.4;
+    }
+
+    /* Search and filters */
+    .section-header input,
+    .section-header select {
         width: 100%;
-        text-align: center;
+        min-height: 42px;
         box-sizing: border-box;
+        font-size: 14px;
     }
 
+    /* Cards */
+    .job-card,
+    .internship-card {
+        width: 100%;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 18px;
+        padding: 18px;
+        margin-bottom: 14px;
+        border-radius: 14px;
+    }
+
+    .card-content {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .card-content h3 {
+        font-size: 19px;
+        line-height: 1.3;
+        overflow-wrap: anywhere;
+    }
+
+    .card-content p {
+        font-size: 14px;
+        line-height: 1.5;
+        overflow-wrap: anywhere;
+    }
+
+    .apply-link {
+        font-size: 14px;
+    }
+
+    /* Edit / Delete buttons */
+    .card-actions {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        gap: 9px;
+    }
+
+    .card-actions a {
+        width: 100%;
+    }
+
+    .card-actions button {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 11px 14px;
+    }
+
+    /* Empty state */
+    .empty-state {
+        padding: 24px 16px;
+        font-size: 14px;
+    }
+
+    /* Delete modal */
+    .delete-modal-box {
+        width: calc(100% - 32px);
+        max-width: 360px;
+        padding: 22px 18px;
+    }
+
+    .delete-modal-actions {
+        flex-direction: column;
+        gap: 9px;
+    }
+
+    .cancel-delete,
+    .confirm-delete {
+        width: 100%;
+    }
+
+    /* Dark mode - dashboard */
+    body.dark-mode .profile-btn {
+        background: #1f2937;
+        color: #f9fafb;
+        border-color: #4b5563;
+    }
+
+    body.dark-mode .section-header input,
+    body.dark-mode .section-header select {
+        background: #1f2937;
+        color: #f9fafb;
+        border-color: #4b5563;
+    }
+
+    body.dark-mode .card-content h3 {
+        color: #f9fafb;
+    }
+
+    body.dark-mode .card-content p {
+        color: #cbd5e1;
+    }
 }
 
 /* =========================================================
@@ -1630,4 +1784,528 @@ body.dark-mode .delete-modal-box p {
 body.dark-mode .cancel-delete {
     background: #374151 !important;
     color: #f9fafb !important;
+}
+
+/* =========================================================
+   DASHBOARD STATUS STAT CARDS
+   ========================================================= */
+
+.stats-container .stat-box {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.stats-container .stat-box:hover {
+    transform: translateY(-3px);
+}
+
+/* Applied */
+.stats-container .stat-box:nth-child(2) {
+    border-left: 5px solid #3b82f6;
+}
+
+/* Interview */
+.stats-container .stat-box:nth-child(3) {
+    border-left: 5px solid #f59e0b;
+}
+
+/* Selected */
+.stats-container .stat-box:nth-child(4) {
+    border-left: 5px solid #22c55e;
+}
+
+/* Rejected */
+.stats-container .stat-box:nth-child(5) {
+    border-left: 5px solid #ef4444;
+}
+
+/* View Details Button */
+
+.details-btn {
+    background: #6366f1;
+    color: white;
+    border: none;
+    padding: 11px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.details-btn:hover {
+    background: #4f46e5;
+}
+
+/* =========================================================
+   FORGOT / RESET PASSWORD
+   ========================================================= */
+
+.auth-container {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.auth-box {
+    width: 100%;
+    max-width: 420px;
+    padding: 32px;
+    background: white;
+    border-radius: 16px;
+    box-sizing: border-box;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+}
+
+.auth-box h1 {
+    margin-bottom: 10px;
+}
+
+.auth-box p {
+    line-height: 1.5;
+}
+
+.auth-box .primary-btn {
+    width: 100%;
+    margin-top: 8px;
+}
+
+.auth-link {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.error-message {
+    margin: 15px 0;
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: #fee2e2;
+    color: #b91c1c;
+    font-size: 14px;
+}
+
+/* Forgot / Reset Password - Dark Mode */
+
+body.dark-mode .auth-box {
+    background: #1f2937;
+    color: #e5e7eb;
+    box-shadow: none;
+}
+
+body.dark-mode .auth-box h1 {
+    color: #f9fafb;
+}
+
+body.dark-mode .auth-box p {
+    color: #cbd5e1;
+}
+
+body.dark-mode .auth-box input {
+    background: #111827;
+    color: #f9fafb;
+    border-color: #4b5563;
+}
+
+body.dark-mode .auth-box input::placeholder {
+    color: #9ca3af;
+}
+
+body.dark-mode .auth-link a {
+    color: #93c5fd;
+}
+
+/* ---------- Form & Details Dark Mode ---------- */
+
+body.dark-mode .form-container,
+body.dark-mode .form-box,
+body.dark-mode .details-container,
+body.dark-mode .details-box {
+    background: #1f2937 !important;
+    color: #e5e7eb !important;
+    border-color: #374151 !important;
+    box-shadow: none !important;
+}
+
+body.dark-mode .form-container h1,
+body.dark-mode .form-container h2,
+body.dark-mode .form-box h1,
+body.dark-mode .form-box h2,
+body.dark-mode .details-container h1,
+body.dark-mode .details-container h2,
+body.dark-mode .details-box h1,
+body.dark-mode .details-box h2 {
+    color: #f9fafb !important;
+}
+
+body.dark-mode label {
+    color: #e5e7eb !important;
+}
+
+body.dark-mode input,
+body.dark-mode select,
+body.dark-mode textarea {
+    background: #111827 !important;
+    color: #f9fafb !important;
+    border-color: #4b5563 !important;
+}
+
+body.dark-mode input::placeholder,
+body.dark-mode textarea::placeholder {
+    color: #9ca3af !important;
+}
+
+body.dark-mode .details-box p {
+    color: #cbd5e1 !important;
+}
+
+body.dark-mode .details-box span {
+    color: #f9fafb !important;
+}
+
+body.dark-mode .back-btn {
+    background: #374151 !important;
+    color: #f9fafb !important;
+    border-color: #4b5563 !important;
+}
+
+/* ---------- Notification Bell ---------- */
+
+.notification-btn {
+    position: fixed;
+    top: 20px;
+    right: 147px;
+    width: 44px;
+    height: 44px;
+    border: 1px solid #d8dee9;
+    background: white;
+    color: #172033;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 20px;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.notification-btn:hover {
+    background: #f3f4f6;
+}
+
+.notification-count {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 4px;
+    background: #ef4444;
+    color: white;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Dark Mode */
+
+body.dark-mode .notification-btn {
+    background: #1f2937;
+    color: #f9fafb;
+    border-color: #4b5563;
+}
+
+body.dark-mode .notification-btn:hover {
+    background: #374151;
+}
+
+/* ---------- Notification Panel ---------- */
+
+.notification-panel {
+    display: none;
+    position: fixed;
+    top: 74px;
+    right: 125px;
+    width: 320px;
+    background: white;
+    border: 1px solid #d8dee9;
+    border-radius: 12px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+    z-index: 999;
+    overflow: hidden;
+}
+
+.notification-panel-header {
+    padding: 15px 16px;
+    border-bottom: 1px solid #e5e7eb;
+    color: #172033;
+}
+
+.notification-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 14px 16px;
+    border-bottom: 1px solid #eef0f4;
+}
+
+.notification-item:last-child {
+    border-bottom: none;
+}
+
+.notification-item strong {
+    color: #172033;
+    font-size: 14px;
+}
+
+.notification-item span {
+    color: #667085;
+    font-size: 13px;
+}
+
+/* Dark Mode */
+
+body.dark-mode .notification-panel {
+    background: #1f2937;
+    border-color: #374151;
+    box-shadow: none;
+}
+
+body.dark-mode .notification-panel-header {
+    color: #f9fafb;
+    border-color: #374151;
+}
+
+body.dark-mode .notification-item {
+    border-color: #374151;
+}
+
+body.dark-mode .notification-item strong {
+    color: #f9fafb;
+}
+
+body.dark-mode .notification-item span {
+    color: #cbd5e1;
+}
+
+.header-divider {
+    position: fixed;
+    top: 30px;
+    right: 142px;
+    width: 1px;
+    height: 24px;
+    background: #98a2b3;
+    z-index: 1001;
+}
+
+body.dark-mode .header-divider {
+    background: #667085;
+}
+
+/* ---------- Mark All as Read ---------- */
+
+.mark-read-btn {
+    width: 100%;
+    padding: 10px 14px;
+    border: none;
+    border-top: 1px solid #e5e7eb;
+    background: transparent;
+    color: #4f46e5;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.mark-read-btn:hover {
+    background: #f5f7fb;
+}
+
+body.dark-mode .mark-read-btn {
+    border-top-color: #374151;
+    color: #93c5fd;
+}
+
+body.dark-mode .mark-read-btn:hover {
+    background: #374151;
+}
+
+/* Build Resume */
+
+.build-resume-section {
+    max-width: 850px;
+    margin: 30px auto;
+}
+
+.build-resume-section h3 {
+    margin-top: 28px;
+    margin-bottom: 12px;
+}
+
+.build-resume-section .profile-field {
+    margin-bottom: 16px;
+}
+
+.build-resume-section textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.build-resume-section input,
+.build-resume-section textarea {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.build-resume-section input[readonly] {
+    background: #f3f4f6;
+    cursor: not-allowed;
+}
+
+body.dark-mode .build-resume-section input[readonly] {
+    background: #374151;
+    color: #f9fafb;
+}
+
+.build-resume-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 30px;
+    flex-wrap: wrap;
+}
+
+.resume-actions a.primary-btn {
+    text-decoration: none;
+}
+
+/* Build Resume */
+
+.build-resume-section {
+    max-width: 850px;
+    margin: 30px auto;
+}
+
+.build-resume-section h3 {
+    margin-top: 30px;
+    margin-bottom: 12px;
+}
+
+.build-resume-section .profile-field {
+    margin-bottom: 16px;
+}
+
+.build-resume-section input,
+.build-resume-section textarea {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.build-resume-section textarea {
+    resize: vertical;
+}
+
+.build-resume-section input[readonly] {
+    background: #f3f4f6;
+    cursor: not-allowed;
+}
+
+body.dark-mode .build-resume-section input[readonly] {
+    background: #374151;
+    color: #f9fafb;
+}
+
+/* Resume Preview */
+
+.resume-preview {
+    max-width: 850px;
+    margin: 30px auto;
+    padding: 45px 50px;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+    color: #172033;
+}
+
+.resume-preview-header {
+    text-align: center;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #172033;
+}
+
+.resume-preview-header h1 {
+    margin: 0 0 8px;
+    font-size: 32px;
+}
+
+.resume-preview-header p {
+    margin: 0;
+    color: #667085;
+    font-size: 14px;
+}
+
+.resume-preview-section {
+    margin-top: 25px;
+}
+
+.resume-preview-section h2 {
+    margin-bottom: 10px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #d8dee9;
+    font-size: 18px;
+}
+
+.resume-preview-section p {
+    margin: 6px 0;
+    line-height: 1.6;
+    white-space: pre-line;
+}
+
+.resume-preview-actions {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    margin-top: 35px;
+    flex-wrap: wrap;
+}
+
+body.dark-mode .resume-preview {
+    background: #1f2937;
+    border-color: #374151;
+    color: #f9fafb;
+    box-shadow: none;
+}
+
+body.dark-mode .resume-preview-header {
+    border-color: #f9fafb;
+}
+
+body.dark-mode .resume-preview-header p {
+    color: #cbd5e1;
+}
+
+body.dark-mode .resume-preview-section h2 {
+    border-color: #4b5563;
+}
+
+.resume-preview-actions a.save-profile-btn {
+    text-decoration: none;
+}
+
+.profile-section h3 {
+    margin-top: 30px;
+    margin-bottom: 15px;
+    font-size: 18px;
+}
+
+.profile-section h3 {
+    padding-top: 10px;
+    border-top: 1px solid #e5e7eb;
+}
+
+body.dark-mode .profile-section h3 {
+    border-color: #374151;
 }

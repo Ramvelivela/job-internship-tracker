@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+    <title>Job Details</title>
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+
+</head>
+
+<body>
+
+    <div class="container">
+
+        <div class="hero">
+
+            <h1>
+                {{ job["company"] }}
+            </h1>
+
+            <p>
+                {{ job["role"] }}
+            </p>
+
+        </div>
+
+
+        <div class="resume-box">
+
+            <h2>
+                Application Details
+            </h2>
+
+
+            <p>
+                <strong>Company:</strong>
+                {{ job["company"] }}
+            </p>
+
+
+            <p>
+                <strong>Role:</strong>
+                {{ job["role"] }}
+            </p>
+
+
+            <p>
+                <strong>Location:</strong>
+                {{ job["location"] or "Not provided" }}
+            </p>
+
+
+            <p>
+                <strong>Status:</strong>
+                {{ job["status"] }}
+            </p>
+
+
+            {% if job["application_date"] %}
+
+                <p>
+                    <strong>Application Date:</strong>
+                    {{ job["application_date"] }}
+                </p>
+
+            {% endif %}
+
+
+            {% if job["deadline"] %}
+
+                <p>
+                    <strong>Deadline:</strong>
+                    {{ job["deadline"] }}
+
+                    {% if job["deadline_status"] == "overdue" %}
+                        🔴 Overdue
+                    {% elif job["deadline_status"] == "soon" %}
+                        🟠 Due Soon
+                    {% else %}
+                        🟢 Upcoming
+                    {% endif %}
+                </p>
+
+            {% endif %}
+
+
+            {% if job["interview_date"] %}
+
+                <p>
+                    <strong>Interview Date:</strong>
+                    {{ job["interview_date"] }}
+
+                    {% if job["interview_status"] == "overdue" %}
+                        🔴 Passed
+                    {% elif job["interview_status"] == "soon" %}
+                        🟠 Coming Soon
+                    {% else %}
+                        🟢 Upcoming
+                    {% endif %}
+                </p>
+
+            {% endif %}
+
+
+            {% if job["follow_up_date"] %}
+
+                <p>
+                    <strong>Follow-up Date:</strong>
+                    {{ job["follow_up_date"] }}
+
+                    {% if job["follow_up_status"] == "overdue" %}
+                        🔴 Follow-up Due
+                    {% elif job["follow_up_status"] == "soon" %}
+                        🟠 Follow-up Soon
+                    {% else %}
+                        🟢 Upcoming
+                    {% endif %}
+                </p>
+
+            {% endif %}
+
+
+            {% if job["notes"] %}
+
+                <p>
+                    <strong>Notes:</strong><br>
+                    {{ job["notes"] }}
+                </p>
+
+            {% endif %}
+
+
+            {% if job["link"] %}
+
+                <p>
+
+                    <a
+                        class="apply-link"
+                        href="{{ job['link'] }}"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        Apply Now →
+                    </a>
+
+                </p>
+
+            {% endif %}
+
+
+            <div class="action-buttons">
+
+                <a
+                    href="/edit-job/{{ job['id'] }}"
+                    class="primary-btn"
+                >
+                    Edit Application
+                </a>
+
+                <a
+                    href="/"
+                    class="primary-btn"
+                >
+                    ← Back to Dashboard
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+        if (localStorage.getItem("theme") === "dark") {
+            document.body.classList.add("dark-mode");
+        }
+    </script>
+
+</body>
+</html>

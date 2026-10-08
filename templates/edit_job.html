@@ -60,26 +60,83 @@
                     <label>Application Status</label>
 
                     <select name="status">
-                        <option value="Pending" {% if job["status"] == "Pending" %}selected{% endif %}>
-                            Pending
+
+                        <option value="Saved"
+                            {% if job["status"] == "Saved" %}selected{% endif %}>
+                            Saved
                         </option>
 
-                        <option value="Applied" {% if job["status"] == "Applied" %}selected{% endif %}>
+                        <option value="Applied"
+                            {% if job["status"] == "Applied" %}selected{% endif %}>
                             Applied
                         </option>
 
-                        <option value="Interview" {% if job["status"] == "Interview" %}selected{% endif %}>
+                        <option value="Assessment"
+                            {% if job["status"] == "Assessment" %}selected{% endif %}>
+                            Assessment
+                        </option>
+
+                        <option value="Interview"
+                            {% if job["status"] == "Interview" %}selected{% endif %}>
                             Interview
                         </option>
 
-                        <option value="Selected" {% if job["status"] == "Selected" %}selected{% endif %}>
+                        <option value="Selected"
+                            {% if job["status"] == "Selected" %}selected{% endif %}>
                             Selected
                         </option>
 
-                        <option value="Rejected" {% if job["status"] == "Rejected" %}selected{% endif %}>
+                        <option value="Rejected"
+                            {% if job["status"] == "Rejected" %}selected{% endif %}>
                             Rejected
                         </option>
+
                     </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Application Date</label>
+                    <input
+                        type="date"
+                        name="application_date"
+                        value="{{ job['application_date'] or '' }}"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label>Application Deadline</label>
+                    <input
+                        type="date"
+                        name="deadline"
+                        value="{{ job['deadline'] or '' }}"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label>Interview Date</label>
+                    <input
+                        type="date"
+                        name="interview_date"
+                        value="{{ job['interview_date'] or '' }}"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label>Follow-up Date</label>
+                    <input
+                        type="date"
+                        name="follow_up_date"
+                        value="{{ job['follow_up_date'] or '' }}"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label>Notes</label>
+                    <textarea
+                        name="notes"
+                        rows="4"
+                        placeholder="Add notes about this application..."
+                    >{{ job['notes'] or '' }}</textarea>
                 </div>
 
                 <div class="form-actions">
@@ -99,6 +156,12 @@
         </div>
 
     </div>
+
+    <script>
+        if (localStorage.getItem("theme") === "dark") {
+            document.body.classList.add("dark-mode");
+        }
+    </script>
 
 </body>
 </html>

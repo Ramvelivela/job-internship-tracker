@@ -9,6 +9,12 @@ from flask import (
 
 import sqlite3
 import os
+import secrets
+from datetime import date, datetime, timedelta
+
+from io import BytesIO
+from flask import send_file
+from reportlab.pdfgen import canvas
 
 import psycopg
 from psycopg.rows import dict_row
@@ -114,6 +120,28 @@ def initialize_database():
         )
     """)
 
+        # Adding application tracking fields to existing jobs table
+
+    cursor.execute("""
+        ALTER TABLE jobs
+        ADD COLUMN IF NOT EXISTS application_date DATE
+    """)
+
+    cursor.execute("""
+        ALTER TABLE jobs
+        ADD COLUMN IF NOT EXISTS deadline DATE
+    """)
+
+    cursor.execute("""
+        ALTER TABLE jobs
+        ADD COLUMN IF NOT EXISTS interview_date DATE
+    """)
+
+    cursor.execute("""
+        ALTER TABLE jobs
+        ADD COLUMN IF NOT EXISTS follow_up_date DATE
+    """)
+
     # ---------------- INTERNSHIPS ----------------
 
     cursor.execute("""
@@ -126,6 +154,28 @@ def initialize_database():
             status TEXT DEFAULT 'Pending',
             user_id INTEGER
         )
+    """)
+
+    # Add application tracking fields to existing internships table
+
+    cursor.execute("""
+        ALTER TABLE internships
+        ADD COLUMN IF NOT EXISTS application_date DATE
+    """)
+
+    cursor.execute("""
+        ALTER TABLE internships
+        ADD COLUMN IF NOT EXISTS deadline DATE
+    """)
+
+    cursor.execute("""
+        ALTER TABLE internships
+        ADD COLUMN IF NOT EXISTS interview_date DATE
+    """)
+
+    cursor.execute("""
+        ALTER TABLE internships
+        ADD COLUMN IF NOT EXISTS follow_up_date DATE
     """)
 
     # ---------------- QUALIFICATIONS ----------------
@@ -277,6 +327,199 @@ def login():
 
     return render_template("login.html")
 
+# =========================================================
+# FORGOT PASSWORD
+# =========================================================
+
+@app.route("/forgot-password", methods=["GET", "POST"])
+def forgot_password():
+
+    if request.method == "POST":
+
+        email = request.form.get("email", "").strip()
+
+        connection = get_connection()
+        cursor = connection.cursor()
+
+        db_execute(cursor, """
+            SELECT *
+            FROM users
+            WHERE email = ?
+        """, (email,))
+
+        user = cursor.fetchone()
+
+        if not user:
+            connection.close()
+
+            return render_template(
+                "forgot_password.html",
+                error="No account found with this email."
+            )
+
+        # -------------------------------------------------
+        # GENERATE SECURE RESET TOKEN
+        # -------------------------------------------------
+
+        reset_token = secrets.token_urlsafe(32)
+
+        reset_token_expiry = (
+            datetime.utcnow() + timedelta(minutes=15)
+        ).isoformat()
+
+        # -------------------------------------------------
+        # SAVE TOKEN
+        # -------------------------------------------------
+
+        db_execute(cursor, """
+            UPDATE users
+            SET reset_token = ?,
+                reset_token_expiry = ?
+            WHERE id = ?
+        """, (
+            reset_token,
+            reset_token_expiry,
+            user["id"]
+        ))
+
+        connection.commit()
+        connection.close()
+
+        # Temporary development flow
+        # We will replace this with email sending later.
+
+        return render_template(
+            "reset_password.html",
+            email=email,
+            reset_token=reset_token
+        )
+
+    return render_template(
+        "forgot_password.html"
+    )
+
+# =========================================================
+# RESET PASSWORD
+# =========================================================
+
+@app.route("/reset-password", methods=["POST"])
+def reset_password():
+
+    email = request.form.get("email", "").strip()
+    reset_token = request.form.get("reset_token", "").strip()
+    password = request.form.get("password", "")
+    confirm_password = request.form.get("confirm_password", "")
+
+    # -----------------------------------------------------
+    # CHECK TOKEN
+    # -----------------------------------------------------
+
+    connection = get_connection()
+    cursor = connection.cursor()
+
+    db_execute(cursor, """
+        SELECT *
+        FROM users
+        WHERE email = ?
+          AND reset_token = ?
+    """, (
+        email,
+        reset_token
+    ))
+
+    user = cursor.fetchone()
+
+    if not user:
+        connection.close()
+
+        return render_template(
+            "reset_password.html",
+            email=email,
+            reset_token=reset_token,
+            error="Invalid or expired password reset request."
+        )
+
+    # -----------------------------------------------------
+    # CHECK TOKEN EXPIRY
+    # -----------------------------------------------------
+
+    try:
+
+        expiry_time = datetime.fromisoformat(
+            user["reset_token_expiry"]
+        )
+
+    except (TypeError, ValueError):
+
+        connection.close()
+
+        return render_template(
+            "reset_password.html",
+            email=email,
+            reset_token=reset_token,
+            error="Invalid password reset request."
+        )
+
+    if datetime.utcnow() > expiry_time:
+
+        connection.close()
+
+        return render_template(
+            "reset_password.html",
+            email=email,
+            reset_token=reset_token,
+            error="Password reset link has expired."
+        )
+
+    # -----------------------------------------------------
+    # PASSWORD VALIDATION
+    # -----------------------------------------------------
+
+    if not password:
+
+        connection.close()
+
+        return render_template(
+            "reset_password.html",
+            email=email,
+            reset_token=reset_token,
+            error="Password cannot be empty."
+        )
+
+    if password != confirm_password:
+
+        connection.close()
+
+        return render_template(
+            "reset_password.html",
+            email=email,
+            reset_token=reset_token,
+            error="Passwords do not match."
+        )
+
+    # -----------------------------------------------------
+    # UPDATE PASSWORD
+    # -----------------------------------------------------
+
+    password_hash = generate_password_hash(
+        password
+    )
+
+    db_execute(cursor, """
+        UPDATE users
+        SET password_hash = ?,
+            reset_token = NULL,
+            reset_token_expiry = NULL
+        WHERE id = ?
+    """, (
+        password_hash,
+        user["id"]
+    ))
+
+    connection.commit()
+    connection.close()
+
+    return redirect("/login")
 
 # =========================================================
 # LOGOUT
@@ -293,6 +536,23 @@ def logout():
 # =========================================================
 # DASHBOARD
 # =========================================================
+
+def get_date_status(date_value):
+    if not date_value:
+        return None
+
+    if isinstance(date_value, str):
+        date_value = date.fromisoformat(date_value)
+
+    today = date.today()
+    days = (date_value - today).days
+
+    if days < 0:
+        return "overdue"
+    elif days <= 3:
+        return "soon"
+    else:
+        return "upcoming"
 
 @app.route("/")
 def home():
@@ -313,8 +573,14 @@ def home():
         session["user_id"],
     ))
 
-    jobs = cursor.fetchall()
+    jobs = [dict(job) for job in cursor.fetchall()]
 
+    for job in jobs:
+        job["deadline_status"] = get_date_status(job["deadline"])
+        job["interview_status"] = get_date_status(job["interview_date"])
+        job["follow_up_status"] = get_date_status(job["follow_up_date"])
+    
+    
     db_execute(cursor, """
         SELECT *
         FROM internships
@@ -325,14 +591,61 @@ def home():
 
     internships = cursor.fetchall()
 
+    internships = [dict(internship) for internship in internships]
+
+    for internship in internships:
+        internship["deadline_status"] = get_date_status(internship["deadline"])
+        internship["interview_status"] = get_date_status(internship["interview_date"])
+        internship["follow_up_status"] = get_date_status(internship["follow_up_date"])
+
     connection.close()
+
+    # =========================================================
+    # NOTIFICATIONS
+    # =========================================================
+
+    overdue_count = 0
+    upcoming_deadlines = 0
+    upcoming_interviews = 0
+    follow_ups = 0
+
+    for job in jobs:
+
+        if job["deadline_status"] == "overdue":
+            overdue_count += 1
+        elif job["deadline_status"] == "soon":
+            upcoming_deadlines += 1
+
+        if job["interview_status"] == "soon":
+            upcoming_interviews += 1
+
+        if job["follow_up_status"] in ["overdue", "soon"]:
+            follow_ups += 1
+
+
+    for internship in internships:
+
+        if internship["deadline_status"] == "overdue":
+            overdue_count += 1
+        elif internship["deadline_status"] == "soon":
+            upcoming_deadlines += 1
+
+        if internship["interview_status"] == "soon":
+            upcoming_interviews += 1
+
+        if internship["follow_up_status"] in ["overdue", "soon"]:
+            follow_ups += 1
+    
 
     return render_template(
         "index.html",
         jobs=jobs,
-        internships=internships
+        internships=internships,
+        overdue_count=overdue_count,
+        upcoming_deadlines=upcoming_deadlines,
+        upcoming_interviews=upcoming_interviews,
+        follow_ups=follow_ups
     )
-
 
 # =========================================================
 # ADD JOB
@@ -354,6 +667,12 @@ def add_job():
         link = request.form["link"]
         status = request.form["status"]
 
+        application_date = request.form.get("application_date")
+        deadline = request.form.get("deadline")
+        interview_date = request.form.get("interview_date")
+        follow_up_date = request.form.get("follow_up_date")
+        notes = request.form.get("notes")
+
         connection = get_connection()
         cursor = connection.cursor()
 
@@ -364,15 +683,25 @@ def add_job():
                 location,
                 link,
                 status,
+                application_date,
+                deadline,
+                interview_date,
+                follow_up_date,
+                notes,
                 user_id
             )
-            VALUES (?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             company,
             role,
             location,
             link,
             status,
+            application_date,
+            deadline,
+            interview_date,
+            follow_up_date,
+            notes,
             session["user_id"]
         ))
 
@@ -404,6 +733,12 @@ def add_internship():
         link = request.form["link"]
         status = request.form["status"]
 
+        application_date = request.form.get("application_date")
+        deadline = request.form.get("deadline")
+        interview_date = request.form.get("interview_date")
+        follow_up_date = request.form.get("follow_up_date")
+        notes = request.form.get("notes")
+
         connection = get_connection()
         cursor = connection.cursor()
 
@@ -414,18 +749,27 @@ def add_internship():
                 location,
                 link,
                 status,
+                application_date,
+                deadline,
+                interview_date,
+                follow_up_date,
+                notes,
                 user_id
             )
-            VALUES (?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             company,
             role,
             location,
             link,
             status,
+            application_date,
+            deadline,
+            interview_date,
+            follow_up_date,
+            notes,
             session["user_id"]
         ))
-
         connection.commit()
         connection.close()
 
@@ -493,6 +837,56 @@ def delete_internship(internship_id):
 
     return redirect("/")
 
+# =========================================================
+# JOB DETAILS
+# =========================================================
+
+@app.route("/job/<int:job_id>")
+def job_details(job_id):
+
+    check = login_required()
+
+    if check:
+        return check
+
+    connection = get_connection()
+    cursor = connection.cursor()
+
+    db_execute(cursor, """
+        SELECT *
+        FROM jobs
+        WHERE id = ?
+          AND user_id = ?
+    """, (
+        job_id,
+        session["user_id"]
+    ))
+
+    job = cursor.fetchone()
+
+    connection.close()
+
+    if not job:
+        return "Job not found", 404
+
+    job = dict(job)
+
+    job["deadline_status"] = get_date_status(
+        job["deadline"]
+    )
+
+    job["interview_status"] = get_date_status(
+        job["interview_date"]
+    )
+
+    job["follow_up_status"] = get_date_status(
+        job["follow_up_date"]
+    )
+
+    return render_template(
+        "job_details.html",
+        job=job
+    )
 
 # =========================================================
 # EDIT JOB
@@ -517,21 +911,37 @@ def edit_job(job_id):
         link = request.form["link"]
         status = request.form["status"]
 
+        application_date = request.form.get("application_date")
+        deadline = request.form.get("deadline")
+        interview_date = request.form.get("interview_date")
+        follow_up_date = request.form.get("follow_up_date")
+        notes = request.form.get("notes")
+
         db_execute(cursor, """
             UPDATE jobs
             SET company = ?,
                 role = ?,
                 location = ?,
                 link = ?,
-                status = ?
+                status = ?,
+                application_date = ?,
+                deadline = ?,
+                interview_date = ?,
+                follow_up_date = ?,
+                notes = ?
             WHERE id = ?
-              AND user_id = ?
+            AND user_id = ?
         """, (
             company,
             role,
             location,
             link,
             status,
+            application_date,
+            deadline,
+            interview_date,
+            follow_up_date,
+            notes,
             job_id,
             session["user_id"]
         ))
@@ -558,6 +968,57 @@ def edit_job(job_id):
     return render_template(
         "edit_job.html",
         job=job
+    )
+
+# =========================================================
+# INTERNSHIP DETAILS
+# =========================================================
+
+@app.route("/internship/<int:internship_id>")
+def internship_details(internship_id):
+
+    check = login_required()
+
+    if check:
+        return check
+
+    connection = get_connection()
+    cursor = connection.cursor()
+
+    db_execute(cursor, """
+        SELECT *
+        FROM internships
+        WHERE id = ?
+          AND user_id = ?
+    """, (
+        internship_id,
+        session["user_id"]
+    ))
+
+    internship = cursor.fetchone()
+
+    connection.close()
+
+    if not internship:
+        return "Internship not found", 404
+
+    internship = dict(internship)
+
+    internship["deadline_status"] = get_date_status(
+        internship["deadline"]
+    )
+
+    internship["interview_status"] = get_date_status(
+        internship["interview_date"]
+    )
+
+    internship["follow_up_status"] = get_date_status(
+        internship["follow_up_date"]
+    )
+
+    return render_template(
+        "internship_details.html",
+        internship=internship
     )
 
 
@@ -587,40 +1048,40 @@ def edit_internship(internship_id):
         link = request.form["link"]
         status = request.form["status"]
 
+        application_date = request.form.get("application_date")
+        deadline = request.form.get("deadline")
+        interview_date = request.form.get("interview_date")
+        follow_up_date = request.form.get("follow_up_date")
+        notes = request.form.get("notes")
+
         db_execute(cursor, """
             UPDATE internships
             SET company = ?,
                 role = ?,
                 location = ?,
                 link = ?,
-                status = ?
+                status = ?,
+                application_date = ?,
+                deadline = ?,
+                interview_date = ?,
+                follow_up_date = ?,
+                notes = ?
             WHERE id = ?
-              AND user_id = ?
+            AND user_id = ?
         """, (
             company,
             role,
             location,
             link,
             status,
+            application_date,
+            deadline,
+            interview_date,
+            follow_up_date,
+            notes,
             internship_id,
             session["user_id"]
         ))
-
-        connection.commit()
-        connection.close()
-
-        return redirect("/")
-
-    db_execute(cursor, """
-        SELECT *
-        FROM internships
-        WHERE id = ?
-          AND user_id = ?
-    """, (
-        internship_id,
-        session["user_id"]
-    ))
-
     internship = cursor.fetchone()
 
     connection.close()
@@ -812,6 +1273,11 @@ def qualifications():
         graduation_year = request.form["graduation_year"]
         cgpa = request.form["cgpa"]
 
+        intermediate_college = request.form.get("intermediate_college", "")
+        intermediate_percentage = request.form.get("intermediate_percentage", "")
+        ssc_school = request.form.get("ssc_school", "")
+        ssc_percentage = request.form.get("ssc_percentage", "")
+
         db_execute(cursor, """
             SELECT id
             FROM qualifications
@@ -830,7 +1296,11 @@ def qualifications():
                     branch = ?,
                     college = ?,
                     graduation_year = ?,
-                    cgpa = ?
+                    cgpa = ?,
+                    intermediate_college = ?,
+                    intermediate_percentage = ?,
+                    ssc_school = ?,
+                    ssc_percentage = ?
                 WHERE user_id = ?
             """, (
                 degree,
@@ -838,30 +1308,42 @@ def qualifications():
                 college,
                 graduation_year,
                 cgpa,
+                intermediate_college,
+                intermediate_percentage,
+                ssc_school,
+                ssc_percentage,
                 session["user_id"]
             ))
 
         else:
 
-            db_execute(cursor, """
+           db_execute(cursor, """
                 INSERT INTO qualifications (
                     user_id,
                     degree,
                     branch,
                     college,
                     graduation_year,
-                    cgpa
+                    cgpa,
+                    intermediate_college,
+                    intermediate_percentage,
+                    ssc_school,
+                    ssc_percentage
                 )
-                VALUES (?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (
                 session["user_id"],
                 degree,
                 branch,
                 college,
                 graduation_year,
-                cgpa
+                cgpa,
+                intermediate_college,
+                intermediate_percentage,
+                ssc_school,
+                ssc_percentage
             ))
-
+           
         connection.commit()
         connection.close()
 
@@ -1153,6 +1635,8 @@ def resume():
     if check:
         return check
 
+    # ---------------- UPLOADED RESUME ----------------
+
     resumes = os.listdir("uploads")
 
     user_resume = [
@@ -1169,12 +1653,731 @@ def resume():
         else None
     )
 
-    return render_template(
-        "resume.html",
-        current_resume=current_resume
+    # ---------------- BUILT RESUME ----------------
+
+    connection = get_connection()
+    cursor = connection.cursor()
+
+    db_execute(cursor, """
+        SELECT *
+        FROM resume_builder
+        WHERE user_id = ?
+    """, (session["user_id"],))
+
+    built_resume = cursor.fetchone()
+
+    connection.close()
+
+    has_built_resume = bool(built_resume)
+
+    # ---------------- VIEW RESUME BUTTON ----------------
+
+    can_view_resume = bool(
+        current_resume or has_built_resume
     )
 
+    return render_template(
+        "resume.html",
+        current_resume=current_resume,
+        has_built_resume=has_built_resume,
+        can_view_resume=can_view_resume
+    )
 
+# ==============================================
+# BUILD RESUME
+# ==============================================
+
+@app.route("/build-resume", methods=["GET", "POST"])
+def build_resume():
+
+    check = login_required()
+
+    if check:
+        return check
+
+    connection = get_connection()
+    cursor = connection.cursor()
+
+    db_execute(cursor, """
+        SELECT *
+        FROM users
+        WHERE id = ?
+    """, (session["user_id"],))
+
+    user = cursor.fetchone()
+
+    db_execute(cursor, """
+        SELECT *
+        FROM qualifications
+        WHERE user_id = ?
+    """, (session["user_id"],))
+
+    qualification = cursor.fetchone()
+
+    db_execute(cursor, """
+        SELECT *
+        FROM resume_builder
+        WHERE user_id = ?
+    """, (session["user_id"],))
+
+    saved_resume = cursor.fetchone()
+
+    if request.method == "POST":
+
+        resume_data = {
+            "full_name": request.form.get("full_name", ""),
+            "email": request.form.get("email", ""),
+            "phone": request.form.get("phone", ""),
+            "location": request.form.get("location", ""),
+            "summary": request.form.get("summary", ""),
+            "skills": request.form.get("skills", ""),
+            "projects": request.form.get("projects", ""),
+            "certifications": request.form.get("certifications", ""),
+            "achievements": request.form.get("achievements", "")
+        }
+
+        # -------------------------------------------------
+        # DELETE EXISTING UPLOADED RESUME
+        # -------------------------------------------------
+
+        for filename in os.listdir("uploads"):
+
+            if filename.startswith(
+                f"user_{session['user_id']}_"
+            ):
+
+                file_path = os.path.join(
+                    "uploads",
+                    filename
+                )
+
+                if os.path.isfile(file_path):
+                    os.remove(file_path)
+
+        # -------------------------------------------------
+        # SAVE PERSONAL DETAILS
+        # -------------------------------------------------
+
+        db_execute(cursor, """
+            UPDATE users
+            SET full_name = ?,
+                email = ?,
+                phone = ?,
+                location = ?,
+                bio = ?
+            WHERE id = ?
+        """, (
+            request.form.get("full_name", ""),
+            request.form.get("email", ""),
+            request.form.get("phone", ""),
+            request.form.get("location", ""),
+            request.form.get("summary", ""),
+            session["user_id"]
+        ))
+
+        # -------------------------------------------------
+        # SAVE BUILT RESUME
+        # -------------------------------------------------
+
+        db_execute(cursor, """
+            INSERT INTO resume_builder (
+                user_id,
+                skills,
+                projects,
+                certifications,
+                achievements
+            )
+            VALUES (?, ?, ?, ?, ?)
+            ON CONFLICT(user_id)
+            DO UPDATE SET
+                skills = excluded.skills,
+                projects = excluded.projects,
+                certifications = excluded.certifications,
+                achievements = excluded.achievements
+        """, (
+            session["user_id"],
+            request.form.get("skills", ""),
+            request.form.get("projects", ""),
+            request.form.get("certifications", ""),
+            request.form.get("achievements", "")
+        ))
+
+        connection.commit()
+        connection.close()
+
+        return render_template(
+            "resume_preview.html",
+            resume=resume_data,
+            qualification=dict(qualification)
+            if qualification
+            else None
+        )
+
+    connection.close()
+
+    return render_template(
+        "build_resume.html",
+        user=dict(user) if user else {},
+        qualification=dict(qualification)
+        if qualification
+        else None,
+        saved_resume=dict(saved_resume)
+        if saved_resume
+        else None
+    )
+
+# ==============================================
+# PDF TEXT HELPER
+# ==============================================
+
+def draw_pdf_heading(pdf, text, x, y):
+    if y < 100:
+        pdf.showPage()
+        y = 800
+
+    pdf.setFont("Helvetica-Bold", 14)
+    pdf.drawString(x, y, text)
+
+    return y - 20
+
+def draw_pdf_text(pdf, text, x, y, line_height=15):
+    page_height = 800
+    bottom_margin = 50
+    max_chars = 95
+
+    for paragraph in text.splitlines():
+
+        words = paragraph.split()
+
+        if not words:
+            y -= line_height
+            continue
+
+        current_line = ""
+
+        for word in words:
+
+            if len(current_line) + len(word) + 1 <= max_chars:
+                if current_line:
+                    current_line += " "
+                current_line += word
+
+            else:
+
+                if y <= bottom_margin:
+                    pdf.showPage()
+                    y = page_height
+
+                pdf.drawString(
+                    x,
+                    y,
+                    current_line
+                )
+
+                y -= line_height
+                current_line = word
+
+        if current_line:
+
+            if y <= bottom_margin:
+                pdf.showPage()
+                y = page_height
+
+            pdf.drawString(
+                x,
+                y,
+                current_line
+            )
+
+            y -= line_height
+
+    return y
+
+# ==============================================
+# SMART VIEW RESUME
+# ==============================================
+
+@app.route("/view-my-resume")
+def view_my_resume():
+
+    check = login_required()
+
+    if check:
+        return check
+
+    # =========================================================
+# VIEW UPLOADED RESUME
+# =========================================================
+
+@app.route("/view-resume/<filename>")
+def view_uploaded_resume(filename):
+
+    check = login_required()
+
+    if check:
+        return check
+
+    user_id = session["user_id"]
+
+    # Security check:
+    # Only allow the logged-in user's own resume
+    if not filename.startswith(
+        f"user_{user_id}_"
+    ):
+        return "Unauthorized", 403
+
+    file_path = os.path.join(
+        "uploads",
+        filename
+    )
+
+    if not os.path.isfile(file_path):
+        return "Resume not found", 404
+
+    return send_from_directory(
+        "uploads",
+        filename
+    )
+
+    # -------------------------------------------------
+    # CHECK BUILT RESUME
+    # -------------------------------------------------
+
+    connection = get_connection()
+    cursor = connection.cursor()
+
+    db_execute(cursor, """
+        SELECT *
+        FROM users
+        WHERE id = ?
+    """, (session["user_id"],))
+
+    user = cursor.fetchone()
+
+    db_execute(cursor, """
+        SELECT *
+        FROM qualifications
+        WHERE user_id = ?
+    """, (session["user_id"],))
+
+    qualification = cursor.fetchone()
+
+    db_execute(cursor, """
+        SELECT *
+        FROM resume_builder
+        WHERE user_id = ?
+    """, (session["user_id"],))
+
+    saved_resume = cursor.fetchone()
+
+    connection.close()
+
+    # No resume found
+
+    if not saved_resume:
+        return redirect("/resume")
+
+    # -------------------------------------------------
+    # PREPARE BUILT RESUME
+    # -------------------------------------------------
+
+    resume = {
+        "full_name": user["full_name"] or "",
+        "email": user["email"] or "",
+        "phone": user["phone"] or "",
+        "location": user["location"] or "",
+        "summary": user["bio"] or "",
+        "skills": saved_resume["skills"] or "",
+        "projects": saved_resume["projects"] or "",
+        "certifications": saved_resume["certifications"] or "",
+        "achievements": saved_resume["achievements"] or ""
+    }
+
+    return render_template(
+        "resume_preview.html",
+        resume=resume,
+        qualification=dict(qualification)
+        if qualification
+        else None
+    )
+
+# ==============================================
+# DOWNLOAD RESUME
+# ==============================================
+@app.route("/download-resume")
+def download_resume():
+    check = login_required()
+    if check:
+        return check
+
+    connection = get_connection()
+    cursor = connection.cursor()
+
+    # ---------------- USER ----------------
+
+    db_execute(cursor, """
+        SELECT *
+        FROM users
+        WHERE id = ?
+    """, (session["user_id"],))
+
+    user = cursor.fetchone()
+
+    # ---------------- QUALIFICATIONS ----------------
+
+    db_execute(cursor, """
+        SELECT *
+        FROM qualifications
+        WHERE user_id = ?
+    """, (session["user_id"],))
+
+    qualification = cursor.fetchone()
+
+    # ---------------- RESUME DATA ----------------
+
+    db_execute(cursor, """
+        SELECT *
+        FROM resume_builder
+        WHERE user_id = ?
+    """, (session["user_id"],))
+
+    saved_resume = cursor.fetchone()
+
+    connection.close()
+
+    # ---------------- PDF SETUP ----------------
+
+    pdf_buffer = BytesIO()
+
+    pdf = canvas.Canvas(
+        pdf_buffer,
+        pagesize=(595, 842)
+    )
+
+    pdf.setTitle("Resume")
+
+    page_width = 595
+    left = 50
+    right = 545
+
+    y = 790
+
+    # ---------------- HEADER ----------------
+
+    pdf.setFont(
+        "Helvetica-Bold",
+        22
+    )
+
+    pdf.drawCentredString(
+        page_width / 2,
+        y,
+        user["full_name"] or "Resume"
+    )
+
+    y -= 25
+
+    contact_parts = []
+
+    if user["email"]:
+        contact_parts.append(user["email"])
+
+    if user["phone"]:
+        contact_parts.append(user["phone"])
+
+    if user["location"]:
+        contact_parts.append(user["location"])
+
+    contact = " | ".join(contact_parts)
+
+    pdf.setFont(
+        "Helvetica",
+        9
+    )
+
+    if contact:
+        pdf.drawCentredString(
+            page_width / 2,
+            y,
+            contact
+        )
+
+    y -= 18
+
+    pdf.setLineWidth(1)
+
+    pdf.line(
+        left,
+        y,
+        right,
+        y
+    )
+
+    y -= 25
+
+    # ---------------- SUMMARY ----------------
+
+    if user["bio"]:
+
+        pdf.setFont(
+            "Helvetica-Bold",
+            12
+        )
+
+        pdf.drawString(
+            left,
+            y,
+            "PROFESSIONAL SUMMARY"
+        )
+
+        y -= 17
+
+        pdf.setFont(
+            "Helvetica",
+            9.5
+        )
+
+        y = draw_pdf_text(
+            pdf,
+            user["bio"],
+            left,
+            y,
+            line_height=14
+        )
+
+        y -= 12
+
+    # ---------------- EDUCATION ----------------
+
+    if qualification:
+
+        if y < 100:
+            pdf.showPage()
+            y = 790
+
+        pdf.setFont(
+            "Helvetica-Bold",
+            12
+        )
+
+        pdf.drawString(
+            left,
+            y,
+            "EDUCATION"
+        )
+
+        y -= 17
+
+        pdf.setFont(
+            "Helvetica-Bold",
+            10
+        )
+
+        education = (
+            f"{qualification['degree']} - "
+            f"{qualification['branch']}"
+        )
+
+        y = draw_pdf_text(
+            pdf,
+            education,
+            left,
+            y,
+            line_height=14
+        )
+
+        pdf.setFont(
+            "Helvetica",
+            9.5
+        )
+
+        y = draw_pdf_text(
+            pdf,
+            qualification["college"] or "",
+            left,
+            y,
+            line_height=14
+        )
+
+        academic_details = []
+
+        if qualification["graduation_year"]:
+            academic_details.append(
+                f"Graduation Year: "
+                f"{qualification['graduation_year']}"
+            )
+
+        if qualification["cgpa"]:
+            academic_details.append(
+                f"CGPA: {qualification['cgpa']}"
+            )
+
+        if academic_details:
+
+            y = draw_pdf_text(
+                pdf,
+                " | ".join(academic_details),
+                left,
+                y,
+                line_height=14
+            )
+
+        y -= 12
+
+    # ---------------- SKILLS ----------------
+
+    if saved_resume and saved_resume["skills"]:
+
+        if y < 100:
+            pdf.showPage()
+            y = 790
+
+        pdf.setFont(
+            "Helvetica-Bold",
+            12
+        )
+
+        pdf.drawString(
+            left,
+            y,
+            "SKILLS"
+        )
+
+        y -= 17
+
+        pdf.setFont(
+            "Helvetica",
+            9.5
+        )
+
+        y = draw_pdf_text(
+            pdf,
+            saved_resume["skills"],
+            left,
+            y,
+            line_height=14
+        )
+
+        y -= 12
+
+    # ---------------- PROJECTS ----------------
+
+    if saved_resume and saved_resume["projects"]:
+
+        if y < 100:
+            pdf.showPage()
+            y = 790
+
+        pdf.setFont(
+            "Helvetica-Bold",
+            12
+        )
+
+        pdf.drawString(
+            left,
+            y,
+            "PROJECTS"
+        )
+
+        y -= 17
+
+        pdf.setFont(
+            "Helvetica",
+            9.5
+        )
+
+        y = draw_pdf_text(
+            pdf,
+            saved_resume["projects"],
+            left,
+            y,
+            line_height=14
+        )
+
+        y -= 12
+
+    # ---------------- CERTIFICATIONS ----------------
+
+    if saved_resume and saved_resume["certifications"]:
+
+        if y < 100:
+            pdf.showPage()
+            y = 790
+
+        pdf.setFont(
+            "Helvetica-Bold",
+            12
+        )
+
+        pdf.drawString(
+            left,
+            y,
+            "CERTIFICATIONS"
+        )
+
+        y -= 17
+
+        pdf.setFont(
+            "Helvetica",
+            9.5
+        )
+
+        y = draw_pdf_text(
+            pdf,
+            saved_resume["certifications"],
+            left,
+            y,
+            line_height=14
+        )
+
+        y -= 12
+
+    # ---------------- ACHIEVEMENTS ----------------
+
+    if saved_resume and saved_resume["achievements"]:
+
+        if y < 100:
+            pdf.showPage()
+            y = 790
+
+        pdf.setFont(
+            "Helvetica-Bold",
+            12
+        )
+
+        pdf.drawString(
+            left,
+            y,
+            "ACHIEVEMENTS / COMPETITIONS"
+        )
+
+        y -= 17
+
+        pdf.setFont(
+            "Helvetica",
+            9.5
+        )
+
+        y = draw_pdf_text(
+            pdf,
+            saved_resume["achievements"],
+            left,
+            y,
+            line_height=14
+        )
+
+    # ---------------- SAVE PDF ----------------
+
+    pdf.save()
+
+    pdf_buffer.seek(0)
+
+    return send_file(
+        pdf_buffer,
+        as_attachment=True,
+        download_name="resume.pdf",
+        mimetype="application/pdf"
+    )
 # =========================================================
 # UPLOAD RESUME
 # =========================================================
@@ -1207,7 +2410,10 @@ def upload_resume():
         f"{original_filename}"
     )
 
-    # Delete old resume for this user
+    # -----------------------------------------------------
+    # DELETE EXISTING UPLOADED RESUME
+    # -----------------------------------------------------
+
     for old_file in os.listdir("uploads"):
 
         if old_file.startswith(
@@ -1222,6 +2428,25 @@ def upload_resume():
             if os.path.isfile(old_path):
                 os.remove(old_path)
 
+    # -----------------------------------------------------
+    # DELETE EXISTING BUILT RESUME
+    # -----------------------------------------------------
+
+    connection = get_connection()
+    cursor = connection.cursor()
+
+    db_execute(cursor, """
+        DELETE FROM resume_builder
+        WHERE user_id = ?
+    """, (session["user_id"],))
+
+    connection.commit()
+    connection.close()
+
+    # -----------------------------------------------------
+    # SAVE NEW UPLOADED RESUME
+    # -----------------------------------------------------
+
     file.save(
         os.path.join(
             "uploads",
@@ -1230,33 +2455,6 @@ def upload_resume():
     )
 
     return redirect("/resume")
-
-
-# =========================================================
-# VIEW RESUME
-# =========================================================
-
-@app.route(
-    "/view-resume/<filename>"
-)
-def view_resume(filename):
-
-    check = login_required()
-
-    if check:
-        return check
-
-    if not filename.startswith(
-        f"user_{session['user_id']}_"
-    ):
-
-        return "Access denied", 403
-
-    return send_from_directory(
-        "uploads",
-        filename
-    )
-
 
 # =========================================================
 # DELETE RESUME
@@ -1273,10 +2471,18 @@ def delete_resume():
     if check:
         return check
 
+    user_id = session["user_id"]
+
+    # -----------------------------------------------------
+    # CHECK AND DELETE UPLOADED RESUME
+    # -----------------------------------------------------
+
+    uploaded_resume_found = False
+
     for filename in os.listdir("uploads"):
 
         if filename.startswith(
-            f"user_{session['user_id']}_"
+            f"user_{user_id}_"
         ):
 
             file_path = os.path.join(
@@ -1285,10 +2491,30 @@ def delete_resume():
             )
 
             if os.path.isfile(file_path):
+
                 os.remove(file_path)
 
-    return redirect("/resume")
+                uploaded_resume_found = True
 
+    # -----------------------------------------------------
+    # IF NO UPLOADED RESUME,
+    # DELETE BUILT RESUME
+    # -----------------------------------------------------
+
+    if not uploaded_resume_found:
+
+        connection = get_connection()
+        cursor = connection.cursor()
+
+        db_execute(cursor, """
+            DELETE FROM resume_builder
+            WHERE user_id = ?
+        """, (user_id,))
+
+        connection.commit()
+        connection.close()
+
+    return redirect("/resume")
 
 # =========================================================
 # RUN APPLICATION

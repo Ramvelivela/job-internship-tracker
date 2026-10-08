@@ -2,7 +2,11 @@
 <html>
 <head>
     <title>My Resume</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
 </head>
 
 <body>
@@ -13,8 +17,12 @@
 
             <div class="resume-header">
                 <h1>My Resume</h1>
-                <p>Manage your resume from your job tracker.</p>
+
+                <p>
+                    Manage your resume from your job tracker.
+                </p>
             </div>
+
 
             <div class="resume-box">
 
@@ -29,29 +37,48 @@
                     while tracking your job applications.
                 </p>
 
-                {% if current_resume %}
+
+                <!-- =========================================
+                     CURRENT RESUME
+                ========================================== -->
+
+                {% if current_resume or has_built_resume %}
 
                     <div class="current-resume">
 
                         <h3>Current Resume</h3>
 
-                        <p>📄 {{ current_resume }}</p>
+                        <p>
+                            📄
+
+                            {% if current_resume %}
+                                {{ current_resume }}
+                            {% else %}
+                                Built Resume
+                            {% endif %}
+                        </p>
+
 
                         <div class="resume-file-actions">
 
+                            <!-- VIEW CURRENT RESUME -->
+
                             <a
-                                href="{{ url_for('view_resume', filename=current_resume) }}"
-                                target="_blank"
+                                href="/view-my-resume"
                                 class="back-btn"
                             >
                                 👁️ View Resume
                             </a>
+
+
+                            <!-- DELETE CURRENT RESUME -->
 
                             <form
                                 action="/delete-resume"
                                 method="POST"
                                 id="deleteResumeForm"
                             >
+
                                 <button
                                     type="button"
                                     class="delete-btn"
@@ -59,13 +86,17 @@
                                 >
                                     🗑️ Delete Resume
                                 </button>
+
                             </form>
 
                         </div>
 
                     </div>
 
+
                 {% else %}
+
+                    <!-- NO RESUME -->
 
                     <p class="no-resume">
                         No resume uploaded yet.
@@ -73,13 +104,32 @@
 
                 {% endif %}
 
+
+                <!-- =========================================
+                     RESUME ACTIONS
+                ========================================== -->
+
                 <div class="resume-actions">
+
+
+                    <!-- BUILD RESUME -->
+
+                    <a
+                        href="/build-resume"
+                        class="primary-btn"
+                    >
+                        📝 Build Resume
+                    </a>
+
+
+                    <!-- UPLOAD RESUME -->
 
                     <form
                         action="/upload-resume"
                         method="POST"
                         enctype="multipart/form-data"
                     >
+
                         <input
                             type="file"
                             id="resumeFile"
@@ -96,6 +146,7 @@
                             📄 Upload Resume
                         </button>
 
+
                         <button
                             type="submit"
                             id="submitResume"
@@ -104,10 +155,17 @@
                         >
                             Upload
                         </button>
+
                     </form>
 
-                    <a href="/" class="back-btn">
-                        Back to Dashboard
+
+                    <!-- CANCEL -->
+
+                    <a
+                        href="/profile"
+                        class="back-btn"
+                    >
+                        Cancel
                     </a>
 
                 </div>
@@ -118,7 +176,15 @@
 
     </div>
 
-    <div id="resumeDeleteModal" class="delete-modal">
+
+    <!-- =========================================
+         DELETE RESUME MODAL
+    ========================================== -->
+
+    <div
+        id="resumeDeleteModal"
+        class="delete-modal"
+    >
 
         <div class="delete-modal-box">
 
@@ -130,6 +196,7 @@
                 This action cannot be undone.
             </p>
 
+
             <div class="delete-modal-actions">
 
                 <button
@@ -139,6 +206,7 @@
                 >
                     Cancel
                 </button>
+
 
                 <button
                     type="button"
@@ -154,27 +222,73 @@
 
     </div>
 
+
+    <!-- =========================================
+         JAVASCRIPT
+    ========================================== -->
+
     <script>
-        document.getElementById("resumeFile").addEventListener("change", function() {
-            if (this.files.length > 0) {
-                document.getElementById("submitResume").click();
-            }
-        });
+
+
+        /* =========================================
+           AUTO UPLOAD
+        ========================================== */
+
+        document
+            .getElementById("resumeFile")
+            .addEventListener(
+                "change",
+                function () {
+
+                    if (this.files.length > 0) {
+
+                        document
+                            .getElementById("submitResume")
+                            .click();
+
+                    }
+
+                }
+            );
+
+
+        /* =========================================
+           DELETE RESUME MODAL
+        ========================================== */
 
         function openResumeDeleteModal() {
-            document.getElementById("resumeDeleteModal").style.display = "flex";
+
+            document
+                .getElementById("resumeDeleteModal")
+                .style.display = "flex";
+
         }
+
 
         function closeResumeDeleteModal() {
-            document.getElementById("resumeDeleteModal").style.display = "none";
+
+            document
+                .getElementById("resumeDeleteModal")
+                .style.display = "none";
+
         }
+
 
         function confirmResumeDelete() {
-            document.getElementById("deleteResumeForm").submit();
+
+            document
+                .getElementById("deleteResumeForm")
+                .submit();
+
         }
 
-        
+
+        /* =========================================
+           THEME
+        ========================================== */
+
         function toggleTheme() {
+
             const isDark =
                 document.body.classList.toggle("dark-mode");
 
@@ -184,32 +298,54 @@
             );
 
             updateThemeButton();
+
         }
 
+
         function updateThemeButton() {
+
             const button =
                 document.getElementById("themeToggle");
 
             if (!button) return;
 
+
             if (
                 document.body.classList.contains("dark-mode")
             ) {
+
                 button.innerHTML = "☀️ Light Mode";
+
             } else {
+
                 button.innerHTML = "🌙 Dark Mode";
+
             }
+
         }
 
-        document.addEventListener("DOMContentLoaded", function () {
-            if (localStorage.getItem("theme") === "dark") {
-                document.body.classList.add("dark-mode");
+
+        /* =========================================
+           LOAD THEME
+        ========================================== */
+
+        document.addEventListener(
+            "DOMContentLoaded",
+            function () {
+
+                if (
+                    localStorage.getItem("theme") === "dark"
+                ) {
+
+                    document.body.classList.add("dark-mode");
+
+                }
+
+                updateThemeButton();
+
             }
+        );
 
-            updateThemeButton();
-        });
-
-        
     </script>
 
 </body>
