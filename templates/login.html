@@ -6,64 +6,154 @@
 
     <title>Login - Job & Internship Tracker</title>
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
 </head>
 
 <body>
 
-    <div class="form-page">
+<div class="login-page">
 
-        <div class="form-header">
-            <h1>🔐 Login</h1>
-            <p>Login to your Job & Internship Tracker</p>
+    <!-- LEFT SIDE -->
+    <div class="login-intro">
+
+        <div class="brand">
+            <div class="brand-icon">💼</div>
+            <span>Job & Internship Tracker</span>
         </div>
-        {% if error %}
-            <p style="color: #dc3545; text-align: center; font-weight: 600;">
-                {{ error }}
-            </p>
-        {% endif %}
 
-        <form method="POST" class="job-form">
+        <div class="intro-content">
 
-            <div class="form-group">
-                <label>Username</label>
-                <input
-                    type="text"
-                    name="username"
-                    placeholder="Enter username"
-                    required
-                >
-            </div>
+            <span class="intro-badge">YOUR CAREER, ORGANIZED</span>
 
-            <div class="form-group">
-                <label>Password</label>
-                <input
-                    type="password"
-                    name="password"
-                    placeholder="Enter password"
-                    required
-                >
-            </div>
+            <h1>
+                Take control of<br>
+                your <span>career journey.</span>
+            </h1>
 
-            <p class="forgot-password">
-                <a href="/forgot-password">
-                    Forgot Password?
-                </a>
+            <p>
+                Track your job applications, internships, interviews,
+                deadlines and career progress — all from one place.
             </p>
 
-            <div class="form-actions">
-                <button type="submit" class="primary-btn">
-                    Login
-                </button>
+            <div class="feature-list">
+
+                <div class="feature-item">
+                    <span>✓</span>
+                    <div>
+                        <strong>Track Applications</strong>
+                        <small>Keep all your opportunities organized.</small>
+                    </div>
+                </div>
+
+                <div class="feature-item">
+                    <span>✓</span>
+                    <div>
+                        <strong>Manage Interviews</strong>
+                        <small>Never lose track of important dates.</small>
+                    </div>
+                </div>
+
+                <div class="feature-item">
+                    <span>✓</span>
+                    <div>
+                        <strong>Build Your Resume</strong>
+                        <small>Create and manage your professional resume.</small>
+                    </div>
+                </div>
+
             </div>
 
-        </form>
-        <p style="text-align: center; margin-top: 18px;">
-            Don't have an account?
-            <a href="/register">Create Account</a>
-        </p>
+        </div>
+
+        <div class="login-footer">
+            Start organizing your career today.
+        </div>
 
     </div>
+
+
+    <!-- RIGHT SIDE -->
+    <div class="login-panel">
+
+        <div class="login-card">
+
+            <div class="login-heading">
+                <h2>Welcome back 👋</h2>
+
+                <p>
+                    Login to continue managing your applications.
+                </p>
+            </div>
+
+            {% if error %}
+                <div class="login-error">
+                    {{ error }}
+                </div>
+            {% endif %}
+
+            <form method="POST">
+
+                <div class="login-field">
+                    <label for="username">Username</label>
+
+                    <input
+                        type="text"
+                        id="username"
+                        name="username"
+                        placeholder="Enter your username"
+                        autocomplete="username"
+                        required
+                    >
+                </div>
+
+                <div class="login-field">
+                    <label for="password">Password</label>
+
+                    <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        placeholder="Enter your password"
+                        autocomplete="current-password"
+                        required
+                    >
+                </div>
+
+                <div class="login-options">
+                    <a href="/forgot-password">
+                        Forgot Password?
+                    </a>
+                </div>
+
+                <button type="submit" class="login-submit">
+                    Login
+                    <span>→</span>
+                </button>
+
+            </form>
+
+            <div class="login-separator">
+                <span>OR</span>
+            </div>
+
+            <div class="new-user">
+                <p>Don't have an account?</p>
+
+                <a href="/register" class="create-account">
+                    Create Account
+                </a>
+            </div>
+
+        </div>
+
+        <div class="mobile-brand">
+            Job & Internship Tracker
+        </div>
+
+    </div>
+
+</div>
 
 </body>
 </html>
